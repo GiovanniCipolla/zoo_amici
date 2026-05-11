@@ -143,6 +143,13 @@ export const membri = [
 		tagline: 'Il più intelligente del gruppo (parole sue)'
 	},
 	{
+		nome: 'Alice',
+		animale: 'Coniglio Nero',
+		emoji: '🐇',
+		colore: '#2a2a2a',
+		tagline: 'Innamorata di un Varano dal sangue caldo: un amore che sfida ogni legge della natura'
+	},
+	{
 		nome: 'Vincenzina',
 		animale: 'Antilope',
 		emoji: '🦌',
@@ -164,7 +171,14 @@ export const membri = [
 		tagline: 'Cri cri cri cri cri'
 	},
 	{
-		nome: 'Giovanna',
+		nome: 'Pasquale',
+		animale: 'Topo',
+		emoji: '🐭',
+		colore: '#9a9a9a',
+		tagline: 'Silenzioso, furtivo, e sa dove tieni il formaggio'
+	},
+	{
+		nome: 'Annalina',
 		animale: 'Rondine',
 		emoji: '🐦',
 		colore: '#3060d0',
