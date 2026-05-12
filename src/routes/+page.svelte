@@ -1,20 +1,62 @@
 <script>
+	import { onMount } from 'svelte';
 	import { membri } from '$lib/membri.js';
 	import CardAnimal from '$lib/components/CardAnimal.svelte';
 	import Modal from '$lib/components/Modal.svelte';
+	import QuizSettimanale from '$lib/components/QuizSettimanale.svelte';
+	import { logVisita } from '$lib/logger.js';
+
+	onMount(() => {
+		logVisita();
+	});
 
 	let selected = $state(null);
 	let search = $state('');
+	let categoriaAttiva = $state(null);
+
+	const categorie = [
+		{ id: 'Felini', emoji: '🐱' },
+		{ id: 'Canidi', emoji: '🐺' },
+		{ id: 'Uccelli', emoji: '🐦' },
+		{ id: 'Erbivori', emoji: '🌿' },
+		{ id: 'Rettili', emoji: '🦎' },
+		{ id: 'Insetti', emoji: '🐛' },
+		{ id: 'Roditori', emoji: '🐭' },
+		{ id: 'Acquatici', emoji: '🌊' },
+		{ id: 'Esotici', emoji: '🌍' }
+	];
+
+	// Animale del giorno — deterministico, cambia ogni giorno
+	const oggi = new Date();
+	const seed = oggi.getFullYear() * 10000 + (oggi.getMonth() + 1) * 100 + oggi.getDate();
+	const animaledelgiorno = membri[seed % membri.length];
+	const dataFormattata = oggi.toLocaleDateString('it-IT', { day: 'numeric', month: 'long' });
 
 	let filtered = $derived(
-		search.trim() === ''
+		search.trim() === '' && categoriaAttiva === null
 			? null
-			: membri.filter(
-					(m) =>
+			: membri.filter((m) => {
+					const matchSearch =
+						search.trim() === '' ||
 						m.nome.toLowerCase().includes(search.toLowerCase()) ||
-						m.animale.toLowerCase().includes(search.toLowerCase())
-				)
+						m.animale.toLowerCase().includes(search.toLowerCase());
+					const matchCategoria = categoriaAttiva === null || m.categoria === categoriaAttiva;
+					return matchSearch && matchCategoria;
+				})
 	);
+
+	const filteredLabel = $derived.by(() => {
+		if (filtered === null) return '';
+		const n = filtered.length;
+		const unit = n === 1 ? 'esemplare' : 'esemplari';
+		if (search.trim() && categoriaAttiva) {
+			return `${n} ${unit} in ${categoriaAttiva} per "${search}"`;
+		} else if (search.trim()) {
+			return `${n} risultat${n === 1 ? 'o' : 'i'} per "${search}"`;
+		} else {
+			return `${n} ${unit} · ${categoriaAttiva}`;
+		}
+	});
 
 	const podio = membri.slice(0, 3);
 	const resto = membri.slice(3);
@@ -25,6 +67,10 @@
 
 	function closeModal() {
 		selected = null;
+	}
+
+	function toggleCategoria(id) {
+		categoriaAttiva = categoriaAttiva === id ? null : id;
 	}
 </script>
 
@@ -66,13 +112,31 @@
 		</div>
 	</div>
 
-	<!-- ── RISULTATI RICERCA ── -->
+	<!-- ── CHIP CATEGORIE ── -->
+	<div class="chip-bar">
+		<button
+			class="chip"
+			class:active={categoriaAttiva === null}
+			onclick={() => (categoriaAttiva = null)}
+		>
+			Tutti
+		</button>
+		{#each categorie as cat}
+			<button
+				class="chip"
+				class:active={categoriaAttiva === cat.id}
+				onclick={() => toggleCategoria(cat.id)}
+			>
+				{cat.emoji} {cat.id}
+			</button>
+		{/each}
+	</div>
+
+	<!-- ── RISULTATI FILTRATI ── -->
 	{#if filtered !== null}
 		<section class="section">
 			{#if filtered.length > 0}
-				<p class="section-label">
-					{filtered.length} risultat{filtered.length === 1 ? 'o' : 'i'} per "{search}"
-				</p>
+				<p class="section-label">{filteredLabel}</p>
 				<div class="grid-base">
 					{#each filtered as membro}
 						{@const rank = membri.indexOf(membro) + 1}
@@ -82,13 +146,43 @@
 			{:else}
 				<div class="empty">
 					<span class="empty-emoji">🤔</span>
-					<p>Nessun animalaccio trovato per "{search}"</p>
+					<p>
+						Nessun esemplare trovato{search ? ` per "${search}"` : ''}{categoriaAttiva
+							? ` nella categoria ${categoriaAttiva}`
+							: ''}
+					</p>
 				</div>
 			{/if}
 		</section>
 
 	<!-- ── VISTA CLASSIFICA NORMALE ── -->
 	{:else}
+		<!-- QUIZ SETTIMANALE -->
+		<QuizSettimanale />
+
+		<!-- ANIMALE DEL GIORNO -->
+		<div
+			class="spotlight"
+			role="button"
+			tabindex="0"
+			onclick={() => openModal(animaledelgiorno)}
+			onkeydown={(e) => e.key === 'Enter' && openModal(animaledelgiorno)}
+			aria-label="Scopri l'animale del giorno: {animaledelgiorno.animale}"
+		>
+			<div class="spotlight-meta">
+				<span class="spotlight-tag">✨ Animale del giorno</span>
+				<span class="spotlight-date">{dataFormattata}</span>
+			</div>
+			<div class="spotlight-body">
+				<span class="spotlight-emoji">{animaledelgiorno.emoji}</span>
+				<div class="spotlight-info">
+					<p class="spotlight-animal">{animaledelgiorno.animale}</p>
+					<p class="spotlight-hint">Tocca per scoprire di chi si tratta</p>
+				</div>
+				<span class="spotlight-arrow">›</span>
+			</div>
+		</div>
+
 		<!-- PODIO -->
 		<section class="section podio-section">
 			<div class="section-header">
@@ -257,7 +351,7 @@
 	/* ── SEARCH ── */
 	.search-wrap {
 		max-width: 440px;
-		margin: 0 auto 2.5rem;
+		margin: 0 auto 1.2rem;
 		animation: fade-down 0.65s ease 0.1s both;
 	}
 
@@ -313,6 +407,133 @@
 		justify-content: center;
 	}
 
+	/* ── CHIP CATEGORIE ── */
+	.chip-bar {
+		display: flex;
+		gap: 0.45rem;
+		flex-wrap: wrap;
+		justify-content: center;
+		max-width: 700px;
+		margin: 0 auto 2rem;
+		animation: fade-down 0.65s ease 0.15s both;
+	}
+
+	.chip {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.3rem;
+		padding: 0.32rem 0.8rem;
+		border-radius: 999px;
+		border: 1px solid rgba(255, 255, 255, 0.1);
+		background: rgba(255, 255, 255, 0.04);
+		color: rgba(240, 240, 250, 0.45);
+		font-family: 'Outfit', sans-serif;
+		font-size: 0.72rem;
+		cursor: pointer;
+		transition: all 0.18s ease;
+		white-space: nowrap;
+	}
+
+	.chip:hover {
+		background: rgba(255, 255, 255, 0.08);
+		color: rgba(240, 240, 250, 0.85);
+		border-color: rgba(255, 255, 255, 0.18);
+	}
+
+	.chip.active {
+		background: rgba(124, 58, 237, 0.22);
+		border-color: rgba(124, 58, 237, 0.5);
+		color: #f0f0fa;
+	}
+
+	/* ── ANIMALE DEL GIORNO ── */
+	.spotlight {
+		max-width: 480px;
+		margin: 0 auto 2.5rem;
+		background: rgba(232, 184, 75, 0.06);
+		border: 1px solid rgba(232, 184, 75, 0.18);
+		border-radius: 20px;
+		padding: 1.1rem 1.4rem;
+		cursor: pointer;
+		transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+		animation: fade-down 0.65s ease 0.2s both;
+	}
+
+	.spotlight:hover {
+		background: rgba(232, 184, 75, 0.11);
+		border-color: rgba(232, 184, 75, 0.32);
+		transform: translateY(-3px);
+		box-shadow: 0 10px 32px rgba(232, 184, 75, 0.12);
+	}
+
+	.spotlight-meta {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		margin-bottom: 0.8rem;
+	}
+
+	.spotlight-tag {
+		font-size: 0.65rem;
+		text-transform: uppercase;
+		letter-spacing: 0.16em;
+		font-weight: 700;
+		color: #e8b84b;
+	}
+
+	.spotlight-date {
+		font-size: 0.68rem;
+		color: rgba(240, 240, 250, 0.3);
+	}
+
+	.spotlight-body {
+		display: flex;
+		align-items: center;
+		gap: 1rem;
+	}
+
+	.spotlight-emoji {
+		font-size: 2.8rem;
+		line-height: 1;
+		filter: drop-shadow(0 4px 12px rgba(232, 184, 75, 0.35));
+	}
+
+	.spotlight-info {
+		flex: 1;
+	}
+
+	.spotlight-animal {
+		font-family: 'Bebas Neue', sans-serif;
+		font-size: 1.35rem;
+		letter-spacing: 0.06em;
+		color: #f0f0fa;
+		margin-bottom: 0.15rem;
+	}
+
+	.spotlight-hint {
+		font-size: 0.62rem;
+		text-transform: uppercase;
+		letter-spacing: 0.1em;
+		color: rgba(240, 240, 250, 0.28);
+		transition: color 0.2s;
+	}
+
+	.spotlight:hover .spotlight-hint {
+		color: rgba(232, 184, 75, 0.65);
+	}
+
+	.spotlight-arrow {
+		font-size: 1.4rem;
+		color: rgba(232, 184, 75, 0.4);
+		transition: transform 0.2s ease, color 0.2s;
+		line-height: 1;
+	}
+
+	.spotlight:hover .spotlight-arrow {
+		transform: translateX(4px);
+		color: rgba(232, 184, 75, 0.8);
+	}
+
 	/* ── SECTIONS ── */
 	.section {
 		margin-bottom: 1.5rem;
@@ -362,7 +583,6 @@
 	}
 
 	.podio-first {
-		/* leggermente più in alto */
 		margin-bottom: -10px;
 	}
 
@@ -464,6 +684,15 @@
 		h1 {
 			flex-direction: column;
 			gap: 0.3rem;
+		}
+
+		.chip-bar {
+			gap: 0.35rem;
+		}
+
+		.chip {
+			font-size: 0.68rem;
+			padding: 0.28rem 0.65rem;
 		}
 	}
 </style>
