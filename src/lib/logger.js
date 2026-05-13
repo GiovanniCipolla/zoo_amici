@@ -56,6 +56,18 @@ async function geoip() {
 	}
 }
 
+/** Incrementa il contatore visite in localStorage e restituisce il numero — mai mostrato all'utente. */
+function visitaCount() {
+	if (typeof localStorage === 'undefined') return '?';
+	try {
+		const n = parseInt(localStorage.getItem('zoo_visit_count') ?? '0', 10) + 1;
+		localStorage.setItem('zoo_visit_count', String(n));
+		return n;
+	} catch {
+		return '?';
+	}
+}
+
 async function send(payload) {
 	if (!WEBHOOK) return;
 	try {
@@ -76,6 +88,7 @@ export async function logVisita() {
 	sessionStorage.setItem('zoo_visit_logged', '1');
 
 	const geo = await geoip();
+	const n = visitaCount();
 
 	send({
 		embeds: [
@@ -89,7 +102,8 @@ export async function logVisita() {
 					{ name: '💿 OS', value: os(), inline: true },
 					{ name: '📍 Posizione', value: geo ? `${geo.citta}, ${geo.paese}` : '—', inline: true },
 					{ name: '🔌 Provider', value: geo ? geo.provider : '—', inline: true },
-					{ name: '🕵️ IP', value: geo ? `\`${geo.ip}\`` : '—', inline: true }
+					{ name: '🕵️ IP', value: geo ? `\`${geo.ip}\`` : '—', inline: true },
+					{ name: '🔢 Visita n°', value: String(n), inline: true }
 				]
 			}
 		]

@@ -9,6 +9,7 @@
 		scoreInfo
 	} from '$lib/quiz.js';
 	import { logQuiz } from '$lib/logger.js';
+	import { unlock } from '$lib/achievements.js';
 
 	const quiz = getCurrentQuiz();
 	const storageKey = quiz ? quizStorageKey(quiz.weekStart) : null;
@@ -29,9 +30,10 @@
 	let stato = $state(!quiz ? 'empty' : savedResult ? 'result' : 'intro');
 	let domandaIndex = $state(0);
 	let risposte = $state(savedResult?.risposte ?? []);
-	let sceltaFatta = $state(null); // oggetto membro scelto
+	let sceltaFatta = $state(null);
 	let mostraFeedback = $state(false);
 	let countdown = $state('');
+	let copiato = $state(false);
 
 	$effect(() => {
 		const tick = () => {
@@ -68,6 +70,15 @@
 		stato = 'playing';
 	}
 
+	function countQuizCompletati() {
+		if (!browser) return 0;
+		let n = 0;
+		for (let i = 0; i < localStorage.length; i++) {
+			if (localStorage.key(i)?.startsWith('zoo_quiz_')) n++;
+		}
+		return n;
+	}
+
 	function rispondi(opzione) {
 		if (sceltaFatta !== null) return;
 		const esatta = opzione.nome === domandaCorrente.risposta;
@@ -89,6 +100,12 @@
 					} catch {}
 				}
 				logQuiz(nuove.filter(Boolean).length, quiz.domande.length, nuove);
+
+				// Achievement
+				unlock('partecipante');
+				if (nuove.filter(Boolean).length === quiz.domande.length) unlock('perfetto');
+				if (countQuizCompletati() >= 4) unlock('veterano');
+
 				stato = 'result';
 			}
 		}, 1600);
@@ -102,6 +119,21 @@
 	}
 
 	const animalDisplay = (m) => (m.disambig ? `${m.animale} ${m.disambig}` : m.animale);
+
+	async function condividi() {
+		if (!quiz) return;
+		const emoji = risposte.map((r) => (r ? '✅' : '❌')).join(' ');
+		const weekDate = new Date(quiz.weekStart + 'T00:00:00').toLocaleDateString('it-IT', {
+			day: 'numeric',
+			month: 'long'
+		});
+		const testo = `🎯 Zoo Animalacci — ${weekDate}\n${emoji}  (${punteggio}/${totale})\nzoo-amici.vercel.app`;
+		try {
+			await navigator.clipboard.writeText(testo);
+			copiato = true;
+			setTimeout(() => (copiato = false), 2200);
+		} catch {}
+	}
 </script>
 
 <!-- ── QUIZ DELLA SETTIMANA ── -->
@@ -129,7 +161,6 @@
 	<!-- ══ STATO: PLAYING ══ -->
 	{:else if stato === 'playing' && domandaCorrente}
 		<div class="quiz-playing">
-			<!-- Progress -->
 			<div class="quiz-header">
 				<span class="quiz-badge">🎯 Quiz della Settimana</span>
 				<span class="quiz-meta">Domanda {domandaIndex + 1} di {totale}</span>
@@ -138,12 +169,10 @@
 				<div class="progress-fill" style="width: {progressWidth}"></div>
 			</div>
 
-			<!-- Domanda (key per animazione al cambio) -->
 			{#key domandaIndex}
 				<p class="quiz-question">{domandaCorrente.testo}</p>
 			{/key}
 
-			<!-- Opzioni -->
 			<div class="options-grid">
 				{#each opzioni as opzione}
 					{@const state = optionState(opzione)}
@@ -183,7 +212,6 @@
 
 			<p class="result-msg">{info.msg}</p>
 
-			<!-- Badge risposta per risposta -->
 			<div class="badges-row">
 				{#each risposte as corretta, i}
 					<div
@@ -196,13 +224,23 @@
 				{/each}
 			</div>
 
+			<!-- Pulsante condivisione -->
+			<button class="btn-share" onclick={condividi}>
+				{#if copiato}
+					<span class="share-ok">✓ Copiato!</span>
+				{:else}
+					<span>Condividi risultato</span>
+					<span class="share-icon">↗</span>
+				{/if}
+			</button>
+
 			<p class="quiz-countdown">
 				<span class="countdown-label">Prossimo quiz tra</span>
 				<span class="countdown-value">{countdown}</span>
 			</p>
 		</div>
 
-	<!-- ══ STATO: EMPTY (nessun quiz questa settimana) ══ -->
+	<!-- ══ STATO: EMPTY ══ -->
 	{:else if stato === 'empty'}
 		<div class="quiz-empty">
 			<div class="quiz-header">
@@ -235,7 +273,6 @@
 		to   { opacity: 1; transform: translateY(0); }
 	}
 
-	/* ── HEADER INTERNO ── */
 	.quiz-header {
 		display: flex;
 		align-items: center;
@@ -256,7 +293,6 @@
 		color: rgba(240, 240, 250, 0.3);
 	}
 
-	/* ── DESCRIZIONE / INTRO ── */
 	.quiz-desc {
 		font-size: 0.82rem;
 		color: rgba(240, 240, 250, 0.55);
@@ -264,7 +300,6 @@
 		margin-bottom: 1.3rem;
 	}
 
-	/* ── BOTTONE START ── */
 	.btn-start {
 		display: flex;
 		align-items: center;
@@ -296,7 +331,6 @@
 		transform: translateX(4px);
 	}
 
-	/* ── COUNTDOWN ── */
 	.quiz-countdown {
 		display: flex;
 		align-items: center;
@@ -317,7 +351,6 @@
 		font-size: 0.8rem;
 	}
 
-	/* ── PROGRESS BAR ── */
 	.progress-bar {
 		height: 3px;
 		background: rgba(255, 255, 255, 0.07);
@@ -333,7 +366,6 @@
 		transition: width 0.4s ease;
 	}
 
-	/* ── DOMANDA ── */
 	.quiz-question {
 		font-size: 0.9rem;
 		color: rgba(240, 240, 250, 0.85);
@@ -348,7 +380,6 @@
 		to   { opacity: 1; transform: translateY(0); }
 	}
 
-	/* ── OPZIONI ── */
 	.options-grid {
 		display: grid;
 		grid-template-columns: 1fr 1fr;
@@ -379,9 +410,7 @@
 		transform: translateY(-2px);
 	}
 
-	.option:disabled {
-		cursor: default;
-	}
+	.option:disabled { cursor: default; }
 
 	.option-emoji {
 		font-size: 1.8rem;
@@ -408,8 +437,7 @@
 		to   { opacity: 1; }
 	}
 
-	.option-check,
-	.option-x {
+	.option-check, .option-x {
 		position: absolute;
 		top: 0.4rem;
 		right: 0.5rem;
@@ -417,16 +445,13 @@
 		font-weight: 700;
 	}
 
-	/* ── STATI OPZIONI ── */
 	.option-correct {
 		background: rgba(34, 197, 94, 0.18) !important;
 		border-color: rgba(34, 197, 94, 0.5) !important;
 		animation: correct-pop 0.45s ease both;
 	}
 
-	.option-check {
-		color: #4ade80;
-	}
+	.option-check { color: #4ade80; }
 
 	@keyframes correct-pop {
 		0%   { transform: scale(1); }
@@ -440,9 +465,7 @@
 		animation: wrong-shake 0.45s ease both;
 	}
 
-	.option-x {
-		color: #f87171;
-	}
+	.option-x { color: #f87171; }
 
 	@keyframes wrong-shake {
 		0%, 100% { transform: translateX(0); }
@@ -452,11 +475,8 @@
 		80%      { transform: translateX(5px); }
 	}
 
-	.option-faded {
-		opacity: 0.3;
-	}
+	.option-faded { opacity: 0.3; }
 
-	/* ── RISULTATO ── */
 	.result-score {
 		display: flex;
 		align-items: center;
@@ -496,11 +516,10 @@
 		line-height: 1.5;
 	}
 
-	/* ── BADGES ── */
 	.badges-row {
 		display: flex;
 		gap: 0.5rem;
-		margin-bottom: 1.2rem;
+		margin-bottom: 1.1rem;
 		flex-wrap: wrap;
 	}
 
@@ -517,23 +536,49 @@
 		100% { opacity: 1; transform: scale(1) translateY(0); }
 	}
 
-	/* ── RESPONSIVE ── */
+	/* ── SHARE BUTTON ── */
+	.btn-share {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0.4rem;
+		width: 100%;
+		background: rgba(255, 255, 255, 0.05);
+		border: 1px solid rgba(255, 255, 255, 0.1);
+		border-radius: 10px;
+		color: rgba(240, 240, 250, 0.65);
+		font-family: 'Outfit', sans-serif;
+		font-size: 0.78rem;
+		font-weight: 600;
+		padding: 0.55rem 1rem;
+		cursor: pointer;
+		transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease;
+		margin-bottom: 1.1rem;
+	}
+
+	.btn-share:hover {
+		background: rgba(255, 255, 255, 0.09);
+		color: #f0f0fa;
+		border-color: rgba(255, 255, 255, 0.18);
+	}
+
+	.share-icon {
+		font-size: 0.85rem;
+		transition: transform 0.18s ease;
+	}
+
+	.btn-share:hover .share-icon {
+		transform: translate(2px, -2px);
+	}
+
+	.share-ok {
+		color: #4ade80;
+	}
+
 	@media (max-width: 480px) {
-		.quiz-card {
-			padding: 1.1rem 1.1rem;
-		}
-
-		.options-grid {
-			grid-template-columns: 1fr 1fr;
-			gap: 0.5rem;
-		}
-
-		.option-emoji {
-			font-size: 1.5rem;
-		}
-
-		.score-number {
-			font-size: 2.4rem;
-		}
+		.quiz-card { padding: 1.1rem 1.1rem; }
+		.options-grid { grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+		.option-emoji { font-size: 1.5rem; }
+		.score-number { font-size: 2.4rem; }
 	}
 </style>
