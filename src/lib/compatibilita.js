@@ -25,14 +25,20 @@ function strHash(s) {
 }
 
 /**
+ * Tabella di distribuzione per le coppie non specificate.
+ * Fortemente sbilanciata verso il basso: 1–6 coprono ~94% dei casi,
+ * 7 è raro (~6%), 8–10 non appaiono mai (riservati alle coppie fisse).
+ */
+const SCORE_TABLE = [1, 1, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 5, 6, 6, 7];
+
+/**
  * Restituisce il punteggio di compatibilità tra due membri (1–10).
  * Simmetrico: compatScore(A, B) === compatScore(B, A).
  */
 export function compatScore(nome1, nome2) {
 	const key = [nome1, nome2].sort().join('|');
 	if (key in OVERRIDES) return OVERRIDES[key];
-	// Range 2–9 per le coppie non specificate (evita estremi banali)
-	return (strHash(key) % 8) + 2;
+	return SCORE_TABLE[strHash(key) % SCORE_TABLE.length];
 }
 
 /** Commenti per fascia di punteggio — scelti deterministicamente per coppia. */
