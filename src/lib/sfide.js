@@ -185,13 +185,49 @@ export const sfide = [
 	}
 ];
 
-/** Restituisce la sfida del giorno basandosi sulla data corrente (ciclica su 30). */
-export function getSfidaDelGiorno() {
+/** Shuffle deterministico con seed intero. */
+function seededShuffle(arr, seed) {
+	const result = [...arr];
+	let s = seed >>> 0;
+	for (let i = result.length - 1; i > 0; i--) {
+		s = (Math.imul(s, 1664525) + 1013904223) >>> 0;
+		const j = s % (i + 1);
+		[result[i], result[j]] = [result[j], result[i]];
+	}
+	return result;
+}
+
+/**
+ * Restituisce tutti i dati della sfida del giorno:
+ * - sfida: tema e descrizione
+ * - formato: '1v1' | '2v2'
+ * - lato1 / lato2: array di membri (1 o 2 per lato)
+ * - voteKey: chiave localStorage unica per oggi
+ *
+ * Tutto è deterministico: lo stesso giorno → stessi avversari.
+ */
+export function getSfidaDati(membri) {
 	const d = new Date();
 	const dayOfYear = Math.floor(
 		(d.getTime() - new Date(d.getFullYear(), 0, 0).getTime()) / 86_400_000
 	);
-	return sfide[(dayOfYear - 1 + sfide.length) % sfide.length];
+	const sfida = sfide[(dayOfYear - 1 + sfide.length) % sfide.length];
+
+	// 3 giorni su 5 → 1v1, 2 su 5 → 2v2
+	const formato = dayOfYear % 5 < 3 ? '1v1' : '2v2';
+	const n = formato === '1v1' ? 2 : 4;
+
+	const seed = d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate();
+	const picked = seededShuffle(membri, seed * 31337).slice(0, n);
+
+	const lato1 = formato === '1v1' ? [picked[0]] : [picked[0], picked[1]];
+	const lato2 = formato === '1v1' ? [picked[1]] : [picked[2], picked[3]];
+
+	const mm = String(d.getMonth() + 1).padStart(2, '0');
+	const dd = String(d.getDate()).padStart(2, '0');
+	const voteKey = `zoo_sfida_${d.getFullYear()}-${mm}-${dd}`;
+
+	return { sfida, formato, lato1, lato2, voteKey };
 }
 
 /** Formatta la data odierna in italiano. */
