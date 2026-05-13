@@ -25,11 +25,21 @@ function strHash(s) {
 }
 
 /**
- * Tabella di distribuzione per le coppie non specificate.
- * Fortemente sbilanciata verso il basso: 1–6 coprono ~94% dei casi,
- * 7 è raro (~6%), 8–10 non appaiono mai (riservati alle coppie fisse).
+ * Tabella di distribuzione per le coppie non specificate (40 slot).
+ * Distribuzione target:
+ *   1 → ~8%   2 → ~10%   3 → ~18%   4 → ~18%   5 → ~18%
+ *   6 → ~13%  7 → ~10%   8–10 → ~8% combined (rari ma presenti)
  */
-const SCORE_TABLE = [1, 1, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 5, 6, 6, 7];
+const SCORE_TABLE = [
+	1, 1, 1,                   // ~7.5%
+	2, 2, 2, 2,                // ~10%
+	3, 3, 3, 3, 3, 3, 3,       // ~17.5%
+	4, 4, 4, 4, 4, 4, 4,       // ~17.5%
+	5, 5, 5, 5, 5, 5, 5,       // ~17.5%
+	6, 6, 6, 6, 6,             // ~12.5%
+	7, 7, 7, 7,                // ~10%
+	8, 9, 10                   // ~2.5% ciascuno
+];
 
 /**
  * Restituisce il punteggio di compatibilità tra due membri (1–10).
