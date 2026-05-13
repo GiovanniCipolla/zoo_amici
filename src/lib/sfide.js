@@ -7,181 +7,181 @@ export const sfide = [
 		tema: 'Sopravvivenza nel bosco',
 		emoji: '🌲',
 		descrizione:
-			'Bloccati nel bosco senza segnale né cibo. Chi costruisce il rifugio? Chi trova da mangiare? Chi è già in lacrime al minuto 3 chiamando i soccorsi con un ramo?'
+			'Bosco, notte fonda, zero segnale. Vince chi riesce a costruire un riparo, trovare acqua e accendere un fuoco prima che faccia buio. Istinto, calma e resistenza fisica decidono tutto.'
 	},
 	{
 		tema: 'Aperitivo infinito',
 		emoji: '🍹',
 		descrizione:
-			"L'aperitivo non finisce mai. Chi regge fino alle 4 di mattina? Chi racconta per la terza volta la storia della propria vita? Chi ordina la quinta bevanda convinto di stare benissimo?"
+			"L'aperitivo inizia alle 18:00 e non ha un orario di chiusura. Vince chi regge di più senza perdere la lucidità — restando in piedi, coerente e ancora divertente quando gli altri sono già andati."
 	},
 	{
 		tema: 'Black Friday',
 		emoji: '🛒',
 		descrizione:
-			'Apertura negozi alle 6:00. Chi era in fila dalla mezzanotte? Chi compra cose assolutamente inutili con la faccia soddisfatta? Chi finisce i soldi prima di mezzogiorno senza rimpianti?'
+			'Budget identico, negozi aperti, 3 ore di tempo. Vince chi torna a casa con gli acquisti più strategici e il miglior rapporto qualità-prezzo. La frenesia non conta — contano le scelte.'
 	},
 	{
 		tema: 'Gita in montagna',
 		emoji: '🏔️',
 		descrizione:
-			'Escursione 10km con dislivello. Chi arriva in cima per primo senza fiatare? Chi finge di avere mal di ginocchio già al secondo tornante? Chi porta il panino di riserva e lo difende con la vita?'
+			'Sentiero di 10km con 800 metri di dislivello, zaino in spalla, nessun mezzo. Vince chi arriva in cima per primo senza aiuti, mantenendo il passo dall\'inizio alla fine.'
 	},
 	{
 		tema: 'Karaoke notturno',
 		emoji: '🎤',
 		descrizione:
-			"Microfono in mano, nessuna via d'uscita. Chi prende tutte le note con stile? Chi canta la stessa canzone per la terza volta stasera? Chi sparisce ogni volta che tocca a lui e ricompare al bis?"
+			"Un microfono, una canzone a testa, il pubblico che giudica. Vince chi conquista la sala — non serve la voce perfetta, serve carisma, presenza e il coraggio di buttarsi senza freni."
 	},
 	{
 		tema: 'Partita a calcio',
 		emoji: '⚽',
 		descrizione:
-			"5 vs 5 al campetto sotto casa. Chi segna e festeggia come ai mondiali? Chi litiga con l'arbitro dal minuto 1? Chi vuole fare il portiere solo per non correre?"
+			'Partita secca, 30 minuti, nessuna sostituzione. Vince la squadra che segna di più, ma la vera vittoria individuale va a chi lascia il segno — con un gol, un assist o una parata impossibile.'
 	},
 	{
 		tema: 'Cena al ristorante chic',
 		emoji: '🕯️',
 		descrizione:
-			'Menù incomprensibile, cameriere in guanti bianchi. Chi ordina la cosa più cara senza battere ciglio? Chi conosce davvero la differenza tra i calici? Chi rovescia il vino bianco sul vestito buono?'
+			"Ristorante stellato, menù degustazione, dress code obbligatorio. Vince chi si muove con più disinvoltura — sa cosa ordina, conosce i vini e non fa una piega di fronte al conto."
 	},
 	{
 		tema: 'Volo low cost',
 		emoji: '✈️',
 		descrizione:
-			'Posto centrale assegnato, bagaglio a mano conteso. Chi arriva al gate 2 minuti prima della chiusura con tre borse? Chi dorme dal decollo fino ai bagagli? Chi mangia un pasto completo a bordo senza vergogna?'
+			'Gate lontanissimo, volo ritardato di due ore, posto centrale tra due sconosciuti. Vince chi atterra più rilassato e in forma — senza stress, senza litigi e con i bagagli intatti.'
 	},
 	{
 		tema: 'Coda autostradale',
 		emoji: '🚗',
 		descrizione:
-			'40km di coda al sole. Chi cambia corsia ogni 30 secondi? Chi inizia a cantare per stemperare la tensione? Chi mangia un pasto completo in auto come se nulla fosse?'
+			'40km di coda ferma sotto il sole di agosto. Vince chi arriva a destinazione più sereno — senza perdere la pazienza, senza errori di percorso e senza aver esaurito il condizionatore.'
 	},
 	{
 		tema: 'Fila alle poste',
 		emoji: '📬',
 		descrizione:
-			'Numero 847. Stanno al 12. Chi porta un libro? Chi conosce già tutti in fila entro 10 minuti? Chi si lamenta ad alta voce ogni 2 minuti e poi si scusa?'
+			"Numero 847, allo sportello sono all'11, e c'è un solo impiegato. Vince chi sbriga la pratica per primo senza abbandonare la coda — pura resistenza mentale e gestione del tempo."
 	},
 	{
 		tema: 'Esame a sorpresa',
 		emoji: '📚',
 		descrizione:
-			"Domani esame, nessuno ha studiato. Chi apre i libri alle 3 di notte credendo di recuperare? Chi si convince di sapere già tutto e va a dormire alle 22? Chi copia con tale eleganza da diventare leggenda?"
+			'Domani mattina esame scritto su tutto il programma. Vince chi prende il voto più alto — con qualunque metodo lecito o borderline, purché il risultato sul foglio sia quello giusto.'
 	},
 	{
 		tema: 'Trasloco al quarto piano',
 		emoji: '📦',
 		descrizione:
-			"Scatole ovunque, ascensore fuori servizio. Chi porta i mobili pesanti senza protestare? Chi si occupa solo degli oggetti fragili? Chi sparisce nei momenti cruciali e riappare col caffè?"
+			"Ascensore rotto, 47 scatole, scala stretta. Vince chi porta su più peso nel minor tempo possibile — senza pause, senza scuse e senza lasciare nulla al piano di sotto."
 	},
 	{
 		tema: 'Masterchef notturno',
 		emoji: '👨‍🍳',
 		descrizione:
-			'Soli in cucina, frigo quasi vuoto, ospiti in arrivo tra un ora. Chi inventa qualcosa di commestibile? Chi brucia il sugo e nega tutto? Chi ordina la pizza in segreto mentre gli altri cucinano?'
+			'Frigo semivuoto, ospiti in arrivo tra un\'ora, fornelli liberi. Vince chi porta in tavola il piatto più buono e presentabile usando solo ciò che trova — creatività e tecnica sopra tutto.'
 	},
 	{
 		tema: 'Notte in tenda',
 		emoji: '⛺',
 		descrizione:
-			'Campeggio improvvisato nella natura. Chi porta tutto il necessario con lista precompilata? Chi dimentica il sacco a pelo e si lamenta tutta la notte? Chi sente rumori nel bosco e sveglia tutti alle 3?'
+			'Campeggio selvaggio, nessun comfort, temperatura sotto i 10 gradi. Vince chi dorme meglio e si sveglia più riposato — montare bene la tenda e reggere il freddo sono i requisiti minimi.'
 	},
 	{
 		tema: 'Gara di ballo',
 		emoji: '💃',
 		descrizione:
-			'Pista da ballo, tutti obbligati a esibirsi. Chi prende campo e non lo lascia per tutta la serata? Chi balla in un angolo sperando di non essere visto? Chi improvvisa mosse mai catalogate dalla scienza?'
+			'Pista da ballo, giuria di tre persone, un minuto a testa per convincerli. Vince chi ha più presenza scenica — tecnica è un bonus, ma è il carisma che decide il vincitore.'
 	},
 	{
 		tema: 'Escape room',
 		emoji: '🔐',
 		descrizione:
-			"60 minuti per uscire dalla stanza. Chi risolve gli enigmi in silenzio con metodo? Chi urla la soluzione sbagliata con certezza assoluta? Chi inizia a cedere al panico al minuto 20 dicendo 'è impossibile'?"
+			"Stanza chiusa, 60 minuti, 7 enigmi da risolvere in sequenza. Vince chi guida il gruppo fuori nel minor tempo — serve logica fredda, comunicazione efficace e nessun momento di panico."
 	},
 	{
 		tema: 'Mercatino dell\'usato',
 		emoji: '🛍️',
 		descrizione:
-			"Un'ora, 20€ in tasca. Chi trova il pezzo unico della vita? Chi contratta ogni singolo centesimo senza cedere mai? Chi compra qualcosa di inspiegabile convinto di fare l'affare dell'anno?"
+			"20€ in tasca, un'ora di tempo, mercatino pieno di roba. Vince chi torna a casa con l'acquisto più furbo — oggetto di valore reale strappato al prezzo più basso tramite contrattazione pura."
 	},
 	{
 		tema: 'Ferragosto in spiaggia',
 		emoji: '🏖️',
 		descrizione:
-			'Spiaggia al completo, 37 gradi. Chi occupa 10mq con teli, ombrellone e borsa frigo? Chi entra in acqua dopo 5 secondi al sole? Chi finisce la crema solare altrui senza chiedere?'
+			'Spiaggia affollatissima, 37 gradi, ombrelloni esauriti. Vince chi conquista il posto migliore, si gode il mare e torna a casa abbronzato — senza colpi di calore e senza perdere nulla.'
 	},
 	{
 		tema: 'Maratona cinematografica',
 		emoji: '🎬',
 		descrizione:
-			"5 film di fila, divano, coperta, buio totale. Chi sceglie la lista e non accetta obiezioni? Chi si addormenta al secondo film negando di dormire? Chi commenta ogni scena con teorie di propria elaborazione?"
+			'Cinque film di fila, divano, luci spente. Vince chi resta sveglio e lucido fino ai titoli di coda dell\'ultimo — e riesce a raccontare la trama di tutti senza buchi.'
 	},
 	{
 		tema: 'Torneo di videogiochi',
 		emoji: '🎮',
 		descrizione:
-			"Finale epica, tutti contro tutti. Chi vince e non lo fa pesare (solo per i prossimi 6 mesi)? Chi dà la colpa al controller difettoso? Chi smette dicendo 'non era comunque il mio genere'?"
+			'Torneo a eliminazione diretta, stesso gioco per tutti, nessuna rivincita. Vince chi elimina più avversari — la fortuna conta zero, contano riflessi, strategia e sangue freddo.'
 	},
 	{
 		tema: 'Corsa del mattino',
 		emoji: '🏃',
 		descrizione:
-			"Sveglia alle 6, tutti convocati al parco. Chi è già stirato e pronto con la playlist curata? Chi appare in tuta strappata con gli occhi ancora chiusi? Chi torna indietro dopo 500 metri per 'un crampo improvviso'?"
+			'5km al parco, sveglia alle 6, nessun riscaldamento. Vince chi completa il percorso nel minor tempo — partenza lenta e finale in forza vale più di uno sprint suicida al primo chilometro.'
 	},
 	{
 		tema: 'Dieta di gruppo',
 		emoji: '🥗',
 		descrizione:
-			"7 giorni senza junk food, parola d'onore davanti a tutti. Chi regge 3 giorni interi con orgoglio? Chi finisce le patatine al giorno 2 perché 'era già aperto'? Chi non aveva mai iniziato ma partecipa alla chat di supporto?"
+			'Sette giorni senza zuccheri aggiunti, alcol o fritto. Vince chi rispetta le regole fino in fondo senza eccezioni — la verifica è pubblica e spietata, nessuno sconto per nessuno.'
 	},
 	{
 		tema: 'Partita a carte',
 		emoji: '♠️',
 		descrizione:
-			'Scala 40, ultimi giri, tutto in gioco. Chi bluffa con la faccia più seria del tavolo? Chi vince e lo ricorderà per i prossimi sei mesi? Chi accusa qualcuno di barare senza una singola prova?'
+			'Scala 40, tre mani secche, posta simbolica ma orgoglio reale. Vince chi fa più punti nelle tre mani — bluffare è lecito, ricordare le carte è fondamentale, perdere è imperdonabile.'
 	},
 	{
 		tema: 'Concerto all\'aperto',
 		emoji: '🎸',
 		descrizione:
-			"Prima fila, 3 ore in piedi. Chi conosce tutte le parole di ogni canzone? Chi filma ogni momento invece di viverlo? Chi sparisce durante i bis per 'evitare il traffico in uscita'?"
+			'Prima fila, tre ore in piedi, caldo e ressa. Vince chi tiene la posizione dall\'inizio alla fine senza mai cedere il posto — resistenza fisica e determinazione sopra ogni cosa.'
 	},
 	{
-		tema: 'Shopping natalizio di emergenza',
+		tema: 'Shopping natalizio',
 		emoji: '🎄',
 		descrizione:
-			"Il 24 dicembre, regali ancora da fare. Chi compra tutto quel giorno con calma olimpica? Chi confeziona i regali in modo artistico da sembrare un professionista? Chi consegna qualcosa di riciclato con carta nuova e sorriso innocente?"
+			'Budget fisso, lista di 5 persone da accontentare, negozi chiudono tra due ore. Vince chi compra regali azzeccati per tutti senza sforare il budget — creatività e conoscenza delle persone valgono oro.'
 	},
 	{
 		tema: 'Notte in bianco',
 		emoji: '🌙',
 		descrizione:
-			"Sfida di resistenza: nessuno dorme. Chi conta le stelle alle 7 di mattina ancora lucido? Chi crolla alle 2:30 giurando di 'riposare solo 5 minuti'? Chi diventa profondamente filosofo dopo le 3 di notte?"
+			'Nessuno dorme fino alle 6 di mattina — questa è la regola. Vince chi arriva all\'alba più lucido, più in forma e più funzionale. Il cedimento è immediata sconfitta.'
 	},
 	{
 		tema: 'Quiz di cultura generale',
 		emoji: '🧠',
 		descrizione:
-			"Domande a raffica, timer spietato. Chi risponde di tutto con la sicurezza di chi sa davvero? Chi usa 'mah, non si sa mai' come strategia consolidata? Chi conosce solo domande di calcio o musica ma vince comunque?"
+			'30 domande, 20 secondi a risposta, nessun aiuto esterno. Vince chi segna più punti — geografia, storia, scienza, musica e sport, tutto in un unico banco di prova.'
 	},
 	{
 		tema: 'Sfida piccante',
 		emoji: '🌶️',
 		descrizione:
-			'Livello di piccante crescente, nessuna resa onorevole. Chi arriva fino in fondo senza versare una lacrima? Chi chiede acqua già al primo piatto? Chi nega di soffrire con la faccia rossa come un peperone?'
+			'Sei livelli di piccante crescente, un boccone per ciascuno. Vince chi arriva al livello più alto senza bere acqua — la resa è totale e senza appello, nessuna mezza misura.'
 	},
 	{
 		tema: 'Gara fotografica',
 		emoji: '📸',
 		descrizione:
-			"Un'ora di tempo, tema libero, vince il più creativo. Chi fa la foto artistica che nessuno capisce ma tutti apprezzano? Chi fotografa solo cibo? Chi cancella 30 scatti perché 'non catturavano l'essenza giusta'?"
+			"Un'ora di tempo, tema assegnato al momento, una foto finale da consegnare. Vince chi produce l'immagine più bella e coerente col tema — la giuria è il gruppo, il voto è insindacabile."
 	},
 	{
 		tema: 'Capodanno',
 		emoji: '🎉',
 		descrizione:
-			"Conto alla rovescia, brindisi, fuochi artificiali. Chi abbraccia tutti commosso con le lacrime agli occhi? Chi era già distrutto alle 22:00? Chi aspetta solo la mezzanotte per potersi giustificare ad andare a dormire?"
+			'La notte più lunga dell\'anno: cena, countdown, brindisi e beyond. Vince chi arriva al mattino del primo gennaio ancora in piedi, lucido e con qualcosa di memorabile da raccontare.'
 	}
 ];
 
