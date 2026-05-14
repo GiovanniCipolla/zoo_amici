@@ -110,6 +110,45 @@ export async function logVisita() {
 	});
 }
 
+/** Logga un giro alle slot machine. */
+export async function logSlotGiro({ simboli, vincita, animale, giriRimasti }) {
+	const simboliStr = simboli.map((s) => s.emoji).join('  ');
+	const colore = vincita ? 0xffd700 : 0x2a2a3a;
+	const titolo = vincita
+		? `🎰 JACKPOT! Tris di ${animale.emoji} ${animale.nome}!`
+		: `🎰 Giro alle Slot`;
+
+	const geo = await geoip();
+
+	send({
+		embeds: [
+			{
+				title: titolo,
+				color: colore,
+				fields: [
+					{ name: '🎡 Risultato', value: `**${simboliStr}**`, inline: true },
+					{
+						name: vincita ? '🏆 Vincita' : '💸 Esito',
+						value: vincita ? `**${animale.grido} ${animale.nome}!**` : 'Niente da fare',
+						inline: true
+					},
+					{ name: '🔄 Giri rimasti', value: String(giriRimasti), inline: true },
+					{ name: '📅 Quando', value: ora(), inline: true },
+					{ name: '💻 Dispositivo', value: dispositivo(), inline: true },
+					{ name: '🌐 Browser', value: browser(), inline: true },
+					{ name: '💿 OS', value: os(), inline: true },
+					{
+						name: '📍 Posizione',
+						value: geo ? `${geo.citta}, ${geo.paese}` : '—',
+						inline: true
+					},
+					{ name: '🕵️ IP', value: geo ? `\`${geo.ip}\`` : '—', inline: true }
+				]
+			}
+		]
+	});
+}
+
 /** Logga il completamento di un quiz con punteggio e risposte. */
 export async function logQuiz(punteggio, totale, risposte) {
 	const badges = risposte.map((r) => (r ? '✅' : '❌')).join('  ');

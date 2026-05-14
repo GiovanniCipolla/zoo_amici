@@ -11,6 +11,7 @@
 	import Achievements from '$lib/components/Achievements.svelte';
 	import { logVisita } from '$lib/logger.js';
 	import { unlock } from '$lib/achievements.js';
+	import { goto } from '$app/navigation';
 
 	onMount(() => {
 		logVisita();
@@ -131,6 +132,10 @@
 		<p class="subtitle">
 			{membri.length} esemplari catalogati · Premi su un animale per scoprire di chi è
 		</p>
+		<!-- Slot machine CTA -->
+		<button class="slots-cta" onclick={() => goto('/slots')}>
+			🎰 Slot Machine Animalesca
+		</button>
 		<!-- Citazione del giorno -->
 		<p class="quote-of-day">
 			<span class="quote-mark">"</span>{quoteMembro.tagline}<span class="quote-mark">"</span>
@@ -439,6 +444,32 @@
 		margin-top: 1rem;
 		font-size: 0.85rem;
 		color: rgba(240, 240, 250, 0.38);
+	}
+
+	/* ── SLOT CTA ── */
+	.slots-cta {
+		margin-top: 1rem;
+		padding: 0.55rem 1.4rem;
+		background: linear-gradient(135deg, rgba(255, 215, 0, 0.12), rgba(232, 150, 26, 0.12));
+		border: 1px solid rgba(255, 215, 0, 0.35);
+		border-radius: 999px;
+		color: #ffd700;
+		font-size: 0.9rem;
+		font-weight: 700;
+		cursor: pointer;
+		letter-spacing: 0.03em;
+		transition: all 0.2s;
+		animation: slotsCTAGlow 2.5s ease-in-out infinite alternate;
+	}
+	.slots-cta:hover {
+		background: linear-gradient(135deg, rgba(255, 215, 0, 0.22), rgba(232, 150, 26, 0.22));
+		border-color: rgba(255, 215, 0, 0.7);
+		transform: translateY(-2px);
+		box-shadow: 0 4px 16px rgba(255, 215, 0, 0.25);
+	}
+	@keyframes slotsCTAGlow {
+		from { box-shadow: 0 0 8px rgba(255, 215, 0, 0.1); }
+		to   { box-shadow: 0 0 20px rgba(255, 215, 0, 0.3); }
 	}
 
 	/* ── CITAZIONE DEL GIORNO ── */

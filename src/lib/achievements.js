@@ -42,6 +42,18 @@ export const ACHIEVEMENTS = [
 		emoji: '⚗️',
 		nome: 'Chimico',
 		desc: 'Hai testato 5 compatibilità'
+	},
+	{
+		id: 'giocatore',
+		emoji: '🎰',
+		nome: 'Giocatore',
+		desc: 'Hai fatto il primo giro alle slot'
+	},
+	{
+		id: 'fortunello',
+		emoji: '🍀',
+		nome: 'Fortunello',
+		desc: 'Hai vinto alle slot machine! (2% di probabilità...)'
 	}
 ];
 
