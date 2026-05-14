@@ -294,7 +294,7 @@
 		tabindex="0"
 		style="--win-colore: {animaleVincente.colore}"
 	>
-		<div class="win-box" onclick|stopPropagation>
+		<div class="win-box" onclick={(e) => e.stopPropagation()}>
 			<div class="win-tris">
 				{animaleVincente.emoji}{animaleVincente.emoji}{animaleVincente.emoji}
 			</div>
