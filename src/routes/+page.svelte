@@ -132,10 +132,6 @@
 		<p class="subtitle">
 			{membri.length} esemplari catalogati · Premi su un animale per scoprire di chi è
 		</p>
-		<!-- Slot machine CTA -->
-		<button class="slots-cta" onclick={() => goto('/slots')}>
-			🎰 Slot Machine Animalesca
-		</button>
 		<!-- Citazione del giorno -->
 		<p class="quote-of-day">
 			<span class="quote-mark">"</span>{quoteMembro.tagline}<span class="quote-mark">"</span>
@@ -160,6 +156,16 @@
 			{/if}
 		</div>
 	</div>
+
+	<!-- ── SLOT CTA ── -->
+	<button class="slots-cta" onclick={() => goto('/slots')}>
+		<span class="slots-cta-icon">🎰</span>
+		<span class="slots-cta-text">
+			<span class="slots-cta-title">Slot Machine Animalesca</span>
+			<span class="slots-cta-sub">10 giri al giorno · 2% di probabilità di vincere</span>
+		</span>
+		<span class="slots-cta-arrow">›</span>
+	</button>
 
 	<!-- ── CHIP CATEGORIE ── -->
 	<div class="chip-bar">
@@ -448,28 +454,60 @@
 
 	/* ── SLOT CTA ── */
 	.slots-cta {
-		margin-top: 1rem;
-		padding: 0.55rem 1.4rem;
-		background: linear-gradient(135deg, rgba(255, 215, 0, 0.12), rgba(232, 150, 26, 0.12));
-		border: 1px solid rgba(255, 215, 0, 0.35);
-		border-radius: 999px;
+		width: 100%;
+		max-width: 560px;
+		display: flex;
+		align-items: center;
+		gap: 1rem;
+		padding: 1rem 1.25rem;
+		background: linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(232, 150, 26, 0.08));
+		border: 1px solid rgba(255, 215, 0, 0.4);
+		border-radius: 16px;
 		color: #ffd700;
-		font-size: 0.9rem;
-		font-weight: 700;
 		cursor: pointer;
-		letter-spacing: 0.03em;
+		text-align: left;
 		transition: all 0.2s;
 		animation: slotsCTAGlow 2.5s ease-in-out infinite alternate;
 	}
 	.slots-cta:hover {
-		background: linear-gradient(135deg, rgba(255, 215, 0, 0.22), rgba(232, 150, 26, 0.22));
+		background: linear-gradient(135deg, rgba(255, 215, 0, 0.18), rgba(232, 150, 26, 0.14));
 		border-color: rgba(255, 215, 0, 0.7);
 		transform: translateY(-2px);
-		box-shadow: 0 4px 16px rgba(255, 215, 0, 0.25);
+		box-shadow: 0 6px 24px rgba(255, 215, 0, 0.2);
+	}
+	.slots-cta-icon {
+		font-size: 2rem;
+		flex-shrink: 0;
+		animation: slotIconSpin 3s ease-in-out infinite;
+	}
+	@keyframes slotIconSpin {
+		0%, 100% { transform: rotate(-5deg) scale(1); }
+		50%       { transform: rotate(5deg) scale(1.12); }
+	}
+	.slots-cta-text {
+		display: flex;
+		flex-direction: column;
+		gap: 0.15rem;
+		flex: 1;
+	}
+	.slots-cta-title {
+		font-size: 1rem;
+		font-weight: 800;
+		letter-spacing: 0.02em;
+	}
+	.slots-cta-sub {
+		font-size: 0.75rem;
+		color: rgba(255, 215, 0, 0.55);
+		font-weight: 400;
+	}
+	.slots-cta-arrow {
+		font-size: 1.5rem;
+		color: rgba(255, 215, 0, 0.4);
+		flex-shrink: 0;
 	}
 	@keyframes slotsCTAGlow {
-		from { box-shadow: 0 0 8px rgba(255, 215, 0, 0.1); }
-		to   { box-shadow: 0 0 20px rgba(255, 215, 0, 0.3); }
+		from { box-shadow: 0 0 10px rgba(255, 215, 0, 0.08); }
+		to   { box-shadow: 0 0 24px rgba(255, 215, 0, 0.25); }
 	}
 
 	/* ── CITAZIONE DEL GIORNO ── */
