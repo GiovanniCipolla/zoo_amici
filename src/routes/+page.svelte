@@ -12,10 +12,30 @@
 	import { logVisita } from '$lib/logger.js';
 	import { unlock } from '$lib/achievements.js';
 	import { goto } from '$app/navigation';
+	import { getTorneoAttivo, getPartite, getStatoPartita, getMembro } from '$lib/torneo.js';
 
 	onMount(() => {
 		logVisita();
+		caricaBanner();
 	});
+
+	let bannerPartita = $state(null);
+	let bannerMem1 = $state(null);
+	let bannerMem2 = $state(null);
+
+	async function caricaBanner() {
+		try {
+			const t = await getTorneoAttivo();
+			if (!t) return;
+			const partite = await getPartite(t.id);
+			const attiva = partite.find((p) => getStatoPartita(p) === 'attivo');
+			if (attiva) {
+				bannerPartita = attiva;
+				bannerMem1 = getMembro(attiva.membro1);
+				bannerMem2 = getMembro(attiva.membro2);
+			}
+		} catch {}
+	}
 
 	let selected = $state(null);
 	let search = $state('');
@@ -113,6 +133,29 @@
 		}
 	}
 </script>
+
+<!-- ── TORNEO BANNER ── -->
+<div class="torneo-alert-wrap" role="banner">
+	<button class="torneo-alert" onclick={() => goto('/torneo')} aria-label="Vai al torneo">
+		<div class="ta-pulse" aria-hidden="true"></div>
+		<span class="ta-icon">🏆</span>
+		<div class="ta-body">
+			<p class="ta-title">IL TORNEO È IN CORSO!</p>
+			{#if bannerPartita && bannerMem1 && bannerMem2}
+				<p class="ta-sub">
+					Sfida #{bannerPartita.posizione} oggi:
+					<strong>{bannerMem1.emoji} {bannerPartita.membro1}</strong>
+					<span class="ta-vs">vs</span>
+					<strong>{bannerMem2.emoji} {bannerPartita.membro2}</strong>
+					— vota ora!
+				</p>
+			{:else}
+				<p class="ta-sub">16 bestie all'arena · Vota la sfida di oggi</p>
+			{/if}
+		</div>
+		<span class="ta-cta">VOTA →</span>
+	</button>
+</div>
 
 <!-- bg blobs decorativi -->
 <div class="bg-blobs" aria-hidden="true">
@@ -864,9 +907,111 @@
 		padding-top: 2rem;
 	}
 
+	/* ── TORNEO BANNER ── */
+	.torneo-alert-wrap {
+		position: relative;
+		z-index: 10;
+		padding: 0.9rem 1.5rem 0;
+		max-width: 1200px;
+		margin: 0 auto;
+	}
+	.torneo-alert {
+		position: relative;
+		width: 100%;
+		display: flex;
+		align-items: center;
+		gap: 1rem;
+		padding: 1rem 1.4rem;
+		background: linear-gradient(135deg, rgba(232,75,75,0.12), rgba(232,120,26,0.1));
+		border: 1px solid rgba(232,75,75,0.45);
+		border-radius: 18px;
+		cursor: pointer;
+		text-align: left;
+		color: #f0f0fa;
+		font-family: 'Outfit', sans-serif;
+		overflow: hidden;
+		transition: all 0.22s ease;
+		animation: banner-glow 2.5s ease-in-out infinite alternate;
+	}
+	.torneo-alert:hover {
+		background: linear-gradient(135deg, rgba(232,75,75,0.2), rgba(232,120,26,0.16));
+		border-color: rgba(232,75,75,0.7);
+		transform: translateY(-2px);
+		box-shadow: 0 8px 32px rgba(232,75,75,0.22);
+	}
+	@keyframes banner-glow {
+		from { box-shadow: 0 0 12px rgba(232,75,75,0.1); }
+		to   { box-shadow: 0 0 28px rgba(232,75,75,0.3); }
+	}
+	.ta-pulse {
+		position: absolute;
+		inset: 0;
+		background: radial-gradient(ellipse at left center, rgba(232,75,75,0.08) 0%, transparent 65%);
+		pointer-events: none;
+		animation: ta-pulse-anim 2s ease-in-out infinite;
+	}
+	@keyframes ta-pulse-anim {
+		0%,100% { opacity: 1; }
+		50%      { opacity: 0.3; }
+	}
+	.ta-icon {
+		font-size: 1.8rem;
+		flex-shrink: 0;
+		animation: rock-small 2s ease-in-out infinite;
+		display: inline-block;
+		position: relative;
+		z-index: 1;
+	}
+	@keyframes rock-small {
+		0%,100% { transform: rotate(-5deg) scale(1); }
+		50%      { transform: rotate(5deg) scale(1.1); }
+	}
+	.ta-body {
+		flex: 1;
+		position: relative;
+		z-index: 1;
+		min-width: 0;
+	}
+	.ta-title {
+		font-family: 'Bebas Neue', sans-serif;
+		font-size: 1.1rem;
+		letter-spacing: 0.1em;
+		color: #e84b4b;
+		line-height: 1;
+		margin-bottom: 0.2rem;
+	}
+	.ta-sub {
+		font-size: 0.8rem;
+		color: rgba(240,240,250,0.55);
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+	.ta-sub strong { color: rgba(240,240,250,0.85); }
+	.ta-vs {
+		font-size: 0.7rem;
+		font-weight: 800;
+		color: #e84b4b;
+		padding: 0 0.2rem;
+	}
+	.ta-cta {
+		font-family: 'Bebas Neue', sans-serif;
+		font-size: 1rem;
+		letter-spacing: 0.14em;
+		color: #e84b4b;
+		flex-shrink: 0;
+		position: relative;
+		z-index: 1;
+		transition: letter-spacing 0.2s;
+	}
+	.torneo-alert:hover .ta-cta { letter-spacing: 0.2em; }
+
 	/* ── RESPONSIVE ── */
 	@media (max-width: 600px) {
 		main { padding: 0 0.9rem 3rem; }
+		.torneo-alert-wrap { padding: 0.7rem 0.9rem 0; }
+		.ta-sub { font-size: 0.72rem; }
+		.ta-title { font-size: 0.95rem; }
 		.podio-grid { gap: 0.6rem; }
 		.grid-base, .cards-grid {
 			grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));

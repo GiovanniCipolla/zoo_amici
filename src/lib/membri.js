@@ -257,5 +257,13 @@ export const membri = [
 		colore: '#4a9e6a',
 		tagline: 'Rettile di classe superiore',
 		categoria: 'Rettili'
+	},
+	{
+		nome: 'Giancarlo',
+		animale: 'Pavone',
+		emoji: '🦚',
+		colore: '#1ab87a',
+		tagline: 'Apre la coda anche al supermercato',
+		categoria: 'Uccelli'
 	}
 ];
