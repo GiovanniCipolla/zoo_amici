@@ -37,7 +37,9 @@
 			try {
 				const n = parseInt(localStorage.getItem('zoo_compat_count') ?? '0', 10) + 1;
 				localStorage.setItem('zoo_compat_count', String(n));
-				if (n >= 5) unlock('chimico');
+				if (n >= 5)  unlock('chimico');
+				if (n >= 20) unlock('alchimista');
+				if (n >= 50) unlock('dottor_zoo');
 			} catch {}
 		}
 	}

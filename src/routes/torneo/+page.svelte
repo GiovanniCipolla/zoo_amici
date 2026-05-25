@@ -2,6 +2,8 @@
 	import { onMount, onDestroy } from 'svelte';
 	import { browser } from '$app/environment';
 	import { goto } from '$app/navigation';
+	import { addSaldo } from '$lib/economia.js';
+	import { unlock } from '$lib/achievements.js';
 	import {
 		getSessionId,
 		getTorneoAttivo,
@@ -95,6 +97,18 @@
 			mioVoto = { votato: selezionato, nominativo: nominativo.trim() || null };
 			votiAttivi = await getVoti(partitaAttiva.id);
 			fase = 'risultati';
+			addSaldo(5, 'voto_torneo');
+			// Salva voto per check predizione futura
+			try {
+				const storico = JSON.parse(localStorage.getItem('zoo_torneo_storico') ?? '{}');
+				storico[String(partitaAttiva.id)] = selezionato;
+				localStorage.setItem('zoo_torneo_storico', JSON.stringify(storico));
+			} catch {}
+			// Achievement voto
+			const nVoti = parseInt(localStorage.getItem('zoo_torneo_voti') ?? '0', 10) + 1;
+			localStorage.setItem('zoo_torneo_voti', String(nVoti));
+			unlock('votante');
+			if (nVoti >= 5) unlock('tifoso');
 		} catch (e) {
 			if (e.message?.includes('duplicate') || e.message?.includes('unique')) {
 				mioVoto = await haVotato(partitaAttiva.id, getSessionId());
@@ -108,6 +122,25 @@
 		}
 	}
 
+	// ── PREDIZIONE VINCITORE ───────────────────────────────────────────────
+	function checkPredizione(partita, voti) {
+		if (!browser) return;
+		try {
+			const storico = JSON.parse(localStorage.getItem('zoo_torneo_storico') ?? '{}');
+			const rewarded = new Set(JSON.parse(localStorage.getItem('zoo_torneo_rewarded') ?? '[]'));
+			const mioVotoPred = storico[String(partita.id)];
+			if (!mioVotoPred || rewarded.has(String(partita.id))) return;
+			const vincitore = getVincitoreCalcolato(partita, voti);
+			if (vincitore === mioVotoPred) {
+				rewarded.add(String(partita.id));
+				localStorage.setItem('zoo_torneo_rewarded', JSON.stringify([...rewarded]));
+				addSaldo(1, 'predizione_corretta');
+				unlock('indovino');
+				if (rewarded.size >= 10) unlock('oracolo');
+			}
+		} catch {}
+	}
+
 	// ── DETTAGLIO PASSATE ──────────────────────────────────────────────────
 	async function apriDettaglio(partita) {
 		if (dettaglioPartita?.id === partita.id) {
@@ -118,6 +151,7 @@
 		dettaglioPartita = partita;
 		dettaglioVoti = await getVoti(partita.id);
 		loadingDettaglio = false;
+		checkPredizione(partita, dettaglioVoti);
 	}
 
 	// ── COUNTDOWN ─────────────────────────────────────────────────────────
@@ -285,6 +319,7 @@
 							{#if mioVoto.nominativo} · come <em>{mioVoto.nominativo}</em>{/if}
 						{/if}
 					</p>
+					<p class="risultati-bonus">+€5.00 guadagnati per il voto 💰</p>
 
 					<!-- Barre percentuali -->
 					<div class="barre-wrap">
@@ -919,6 +954,13 @@
 	}
 	.risultati-tag strong { color: #e8b84b; }
 	.risultati-tag em { color: rgba(240,240,250,0.7); }
+	.risultati-bonus {
+		text-align: center;
+		font-size: 0.9rem;
+		font-weight: 700;
+		color: #ffd700;
+		align-self: center;
+	}
 
 	.barre-wrap {
 		display: grid;

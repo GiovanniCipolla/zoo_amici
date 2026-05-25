@@ -2,9 +2,10 @@
 	import { onMount, onDestroy } from 'svelte';
 	import { browser } from '$app/environment';
 	import { goto } from '$app/navigation';
-	import { SLOT_SIMBOLI, WIN_PARTICLES, MAX_GIRI, gira, giriRimasti } from '$lib/slots.js';
+	import { SLOT_SIMBOLI, WIN_PARTICLES, COSTO_GIRO, gira } from '$lib/slots.js';
+	import { getSaldo, spendSaldo, addSaldo } from '$lib/economia.js';
 	import { logSlotGiro } from '$lib/logger.js';
-	import { unlock } from '$lib/achievements.js';
+	import { unlock, checkEconomyAchievements } from '$lib/achievements.js';
 
 	// ── Stato ─────────────────────────────────────────────────────────
 	// Ogni reel mostra 3 simboli: [top, middle(payline), bottom]
@@ -20,8 +21,8 @@
 	let vincita = $state(false);
 	let animaleVincente = $state(null);
 	let showWin = $state(false);
-	let giriOggi = $state(MAX_GIRI);
-	let esaurito = $state(false);
+	let saldo = $state(0);
+	const saldoInsuff = $derived(saldo < COSTO_GIRO);
 	let particles = $state([]);
 	let ultimoRisultato = $state(null); // [sym, sym, sym] dell'ultimo giro
 
@@ -29,8 +30,7 @@
 
 	onMount(() => {
 		if (!browser) return;
-		giriOggi = giriRimasti();
-		esaurito = giriOggi <= 0;
+		saldo = getSaldo();
 	});
 
 	onDestroy(() => {
@@ -77,7 +77,10 @@
 	}
 
 	async function handleGira() {
-		if (spinning || esaurito) return;
+		if (spinning || saldoInsuff) return;
+
+		spendSaldo(COSTO_GIRO);
+		saldo = getSaldo();
 
 		// Reset stato precedente
 		vincita = false;
@@ -88,15 +91,13 @@
 
 		const risultato = gira();
 
-		if (risultato.esaurito) {
-			esaurito = true;
-			return;
-		}
-
-		giriOggi = giriRimasti();
-		esaurito = giriOggi <= 0;
-
+		// Achievement giri
 		unlock('giocatore');
+		const nGiri = parseInt(localStorage.getItem('zoo_slots_count') ?? '0', 10) + 1;
+		localStorage.setItem('zoo_slots_count', String(nGiri));
+		if (nGiri >= 10) unlock('spendaccione');
+		if (nGiri >= 50) unlock('slot_veteran');
+		checkEconomyAchievements();
 
 		spinning = true;
 
@@ -126,6 +127,15 @@
 
 			if (vincita) {
 				unlock('fortunello');
+				addSaldo(animaleVincente.premio, 'slot_vincita');
+				saldo = getSaldo();
+				// Achievement vincite
+				const nVincite = parseInt(localStorage.getItem('zoo_slots_wins') ?? '0', 10) + 1;
+				localStorage.setItem('zoo_slots_wins', String(nVincite));
+				if (nVincite >= 2) unlock('doppio_tris');
+				if (nVincite >= 3) unlock('hat_trick');
+				if (nVincite >= 5) unlock('maniaco');
+				checkEconomyAchievements();
 				particles = buildParticles(animaleVincente);
 				setTimeout(() => {
 					showWin = true;
@@ -137,7 +147,7 @@
 				simboli: risultato.simboli,
 				vincita: risultato.vincita,
 				animale: risultato.animale,
-				giriRimasti: giriOggi
+				saldo
 			});
 		}, 3100);
 	}
@@ -158,13 +168,20 @@
 <main>
 	<!-- ── HEADER ── -->
 	<header>
-		<button class="back-btn" onclick={() => goto('/')}>← Torna alla classifica</button>
+		<button class="back-btn" onclick={() => goto('/minigiochi')}>← Minigiochi</button>
 		<h1>
 			<span class="title-icon">🎰</span>
 			<span class="title-text">Slot Machine<br />Animalesca</span>
 		</h1>
-		<p class="subtitle">Tris = vincita &middot; 2% di probabilità &middot; {MAX_GIRI} giri al giorno</p>
+		<p class="subtitle">Tris = vincita &middot; 2% di probabilità &middot; €{COSTO_GIRO} a giro</p>
 	</header>
+
+	<!-- ── WALLET BAR ── -->
+	<div class="wallet-bar">
+		<span class="wallet-icon">💰</span>
+		<span class="wallet-saldo">€{saldo.toFixed(2)}</span>
+		<span class="wallet-costo">Costo: €{COSTO_GIRO}/giro</span>
+	</div>
 
 	<!-- ── MACHINE ── -->
 	<div class="machine-wrap">
@@ -213,35 +230,19 @@
 				<button
 					class="spin-btn"
 					class:spinning
-					class:disabled={esaurito}
+					class:disabled={saldoInsuff}
 					onclick={handleGira}
-					disabled={spinning || esaurito}
+					disabled={spinning || saldoInsuff}
 					aria-label="Gira la slot machine"
 				>
 					{#if spinning}
 						<span class="spin-icon">⟳</span> Girando...
-					{:else if esaurito}
-						🚫 Giri esauriti
+					{:else if saldoInsuff}
+						💸 Saldo insufficiente
 					{:else}
-						🎰 GIRA!
+						🎰 GIRA! — €{COSTO_GIRO.toFixed(2)}
 					{/if}
 				</button>
-
-				<!-- Contatore giri -->
-				<div class="giri-counter">
-					<div class="giri-dots">
-						{#each Array(MAX_GIRI) as _, i}
-							<div class="dot" class:used={i >= giriOggi}></div>
-						{/each}
-					</div>
-					<span class="giri-label">
-						{#if esaurito}
-							Torni domani! 🌙
-						{:else}
-							{giriOggi} gir{giriOggi === 1 ? 'o' : 'i'} rimast{giriOggi === 1 ? 'o' : 'i'} oggi
-						{/if}
-					</span>
-				</div>
 			</div>
 
 			<!-- Risultato ultimo giro (senza vincita) -->
@@ -302,6 +303,7 @@
 			<div class="win-grido">{animaleVincente.grido}</div>
 			<div class="win-nome">{animaleVincente.nome} porta fortuna!</div>
 			<div class="win-sub">Probabilità: 2% &middot; Sei un animale fortunato</div>
+			<div class="win-premio">+€{animaleVincente.premio}.00 vinti! 💰</div>
 			<button class="win-close" onclick={chiudiWin}>Continua a giocare →</button>
 		</div>
 	</div>
@@ -433,6 +435,33 @@
 		color: #999;
 		font-size: 0.85rem;
 		margin: 0;
+	}
+
+	/* ── WALLET BAR ── */
+	.wallet-bar {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+		padding: 0.6rem 1.2rem;
+		background: rgba(255, 215, 0, 0.08);
+		border: 1px solid rgba(255, 215, 0, 0.25);
+		border-radius: 12px;
+		width: 100%;
+		max-width: 440px;
+	}
+	.wallet-icon {
+		font-size: 1.2rem;
+	}
+	.wallet-saldo {
+		font-size: 1.3rem;
+		font-weight: 900;
+		color: #ffd700;
+		letter-spacing: 0.02em;
+		flex: 1;
+	}
+	.wallet-costo {
+		font-size: 0.75rem;
+		color: rgba(255, 215, 0, 0.5);
 	}
 
 	/* ── MACHINE ── */
@@ -661,34 +690,6 @@
 		}
 	}
 
-	/* Giri counter */
-	.giri-counter {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		gap: 0.4rem;
-	}
-	.giri-dots {
-		display: flex;
-		gap: 0.4rem;
-	}
-	.dot {
-		width: 10px;
-		height: 10px;
-		border-radius: 50%;
-		background: #ffd700;
-		box-shadow: 0 0 6px rgba(255, 215, 0, 0.6);
-		transition: all 0.3s;
-	}
-	.dot.used {
-		background: rgba(255, 255, 255, 0.12);
-		box-shadow: none;
-	}
-	.giri-label {
-		font-size: 0.8rem;
-		color: #999;
-	}
-
 	/* Messaggio perdita */
 	.lose-msg {
 		display: flex;
@@ -884,6 +885,14 @@
 	.win-sub {
 		font-size: 0.78rem;
 		color: #666;
+	}
+
+	.win-premio {
+		font-size: 1.1rem;
+		font-weight: 800;
+		color: #ffd700;
+		text-shadow: 0 0 12px rgba(255, 215, 0, 0.5);
+		animation: gridoPulse 0.6s ease-in-out infinite alternate;
 	}
 
 	.win-close {

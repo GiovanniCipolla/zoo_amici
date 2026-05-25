@@ -1,61 +1,91 @@
 import { browser } from '$app/environment';
+import { addSaldo, getSaldo } from './economia.js';
 
 export const ACHIEVEMENTS = [
-	{
-		id: 'cercatore',
-		emoji: '🔍',
-		nome: 'Cercatore',
-		desc: 'Hai usato la barra di ricerca'
-	},
-	{
-		id: 'curioso',
-		emoji: '👀',
-		nome: 'Curioso',
-		desc: 'Hai aperto 10 schede animale'
-	},
-	{
-		id: 'partecipante',
-		emoji: '🎯',
-		nome: 'Partecipante',
-		desc: 'Hai completato il primo quiz'
-	},
-	{
-		id: 'perfetto',
-		emoji: '🏆',
-		nome: 'Leggenda',
-		desc: 'Punteggio perfetto al quiz'
-	},
-	{
-		id: 'veterano',
-		emoji: '📅',
-		nome: 'Veterano',
-		desc: 'Hai completato 4 quiz o più'
-	},
-	{
-		id: 'esploratore',
-		emoji: '🌍',
-		nome: 'Esploratore',
-		desc: 'Hai filtrato tutte le 9 categorie'
-	},
-	{
-		id: 'chimico',
-		emoji: '⚗️',
-		nome: 'Chimico',
-		desc: 'Hai testato 5 compatibilità'
-	},
-	{
-		id: 'giocatore',
-		emoji: '🎰',
-		nome: 'Giocatore',
-		desc: 'Hai fatto il primo giro alle slot'
-	},
-	{
-		id: 'fortunello',
-		emoji: '🍀',
-		nome: 'Fortunello',
-		desc: 'Hai vinto alle slot machine! (2% di probabilità...)'
-	}
+	// ── ESPLORAZIONE ──
+	{ id: 'benvenuto',      emoji: '🎉', nome: 'Benvenuto',        desc: 'Prima visita al sito' },
+	{ id: 'cercatore',      emoji: '🔍', nome: 'Cercatore',        desc: 'Hai usato la barra di ricerca' },
+	{ id: 'curioso',        emoji: '👀', nome: 'Curioso',          desc: 'Hai aperto 10 schede animale' },
+	{ id: 'investigatore',  emoji: '🕵️', nome: 'Investigatore',   desc: 'Hai aperto 20 schede animale' },
+	{ id: 'animalologo',    emoji: '🐾', nome: 'Animalologo',      desc: 'Hai aperto tutte le 32 schede animale' },
+	{ id: 'esploratore',    emoji: '🌍', nome: 'Esploratore',      desc: 'Hai filtrato tutte le 9 categorie' },
+	// ── COMPATIBILITÀ ──
+	{ id: 'chimico',        emoji: '⚗️', nome: 'Chimico',         desc: 'Hai testato 5 compatibilità' },
+	{ id: 'alchimista',     emoji: '🧪', nome: 'Alchimista',       desc: 'Hai testato 20 compatibilità' },
+	{ id: 'dottor_zoo',     emoji: '🧬', nome: 'Dottor Zoo',       desc: 'Hai testato 50 compatibilità' },
+	// ── TORNEO ──
+	{ id: 'votante',        emoji: '🗳️', nome: 'Votante',         desc: 'Primo voto al torneo' },
+	{ id: 'tifoso',         emoji: '⚽', nome: 'Tifoso',           desc: 'Hai votato 5 volte al torneo' },
+	{ id: 'indovino',       emoji: '🔮', nome: 'Indovino',         desc: 'Hai predetto il vincitore di una sfida' },
+	{ id: 'oracolo',        emoji: '✨', nome: 'Oracolo',          desc: 'Hai predetto 10 vincitori — impossibile!' },
+	// ── SLOT ──
+	{ id: 'giocatore',      emoji: '🎰', nome: 'Giocatore',        desc: 'Primo giro alle slot' },
+	{ id: 'spendaccione',   emoji: '💸', nome: 'Spendaccione',     desc: 'Hai girato le slot 10 volte' },
+	{ id: 'slot_veteran',   emoji: '🎲', nome: 'Slot Veteran',     desc: 'Hai girato le slot 50 volte' },
+	{ id: 'fortunello',     emoji: '🍀', nome: 'Fortunello',       desc: 'Hai vinto alle slot! (2% di probabilità...)' },
+	{ id: 'doppio_tris',    emoji: '🎊', nome: 'Doppio Tris',      desc: 'Hai vinto 2 volte alle slot' },
+	{ id: 'hat_trick',      emoji: '🎩', nome: 'Hat-Trick',        desc: 'Hai vinto 3 volte alle slot' },
+	{ id: 'maniaco',        emoji: '🎮', nome: 'Maniaco',          desc: 'Hai vinto 5 volte alle slot — sei ossessionato' },
+	// ── FLAPPY ZOO ──
+	{ id: 'primo_volo',        emoji: '🐦', nome: 'Primo Volo',        desc: 'Supera il primo ostacolo nel Flappy Zoo' },
+	{ id: 'volatile',          emoji: '🌤️', nome: 'Volatile',          desc: 'Raggiungi 10 punti in un solo volo' },
+	{ id: 'acrobata_del_cielo',emoji: '🌪️', nome: 'Acrobata del Cielo',desc: 'Raggiungi 50 punti — quasi impossibile' },
+	{ id: 'dio_del_volo',      emoji: '⚡', nome: 'Dio del Volo',       desc: 'Raggiungi 100 punti — praticamente impossibile' },
+	{ id: 'zoo_volante',       emoji: '🦅', nome: 'Zoo Volante',        desc: 'Supera 10 punti con ogni singolo animale del gruppo' },
+	// ── FEDELTÀ ──
+	{ id: 'abituale',       emoji: '📆', nome: 'Abituale',         desc: 'Primo bonus visita giornaliera riscosso' },
+	{ id: 'fedele',         emoji: '❤️', nome: 'Fedele',           desc: '7 giorni di fila sul sito' },
+	{ id: 'paziente',       emoji: '🏅', nome: 'Paziente',         desc: '30 giorni di fila sul sito' },
+	// ── ECONOMIA ──
+	{ id: 'paperone',       emoji: '💰', nome: 'Paperone',         desc: 'Raggiungi €20 di saldo' },
+	{ id: 'benestante',     emoji: '💎', nome: 'Benestante',       desc: 'Raggiungi €50 di saldo' },
+	{ id: 'bankroll',       emoji: '💵', nome: 'Bankroll',         desc: 'Raggiungi €100 di saldo' },
+	{ id: 'grande_ricco',   emoji: '🤑', nome: 'Grande Ricco',     desc: 'Raggiungi €200 di saldo — premio: altri €200!' },
+	// ── META ──
+	{ id: 'collezionista',     emoji: '🎖️', nome: 'Collezionista',    desc: 'Sblocca 10 achievement' },
+	{ id: 'tuttofare',         emoji: '📚', nome: 'Enciclopedico',     desc: 'Sblocca 20 achievement' },
+	{ id: 'leggenda_assoluta', emoji: '👑', nome: 'Leggenda Assoluta', desc: 'Sblocca tutti gli achievement' }
 ];
+
+const ACHIEVEMENT_REWARDS = {
+	benvenuto:         0.10,
+	cercatore:         0.25,
+	curioso:           0.50,
+	investigatore:     1.00,
+	animalologo:       2.00,
+	esploratore:       1.00,
+	chimico:           0.75,
+	alchimista:        1.50,
+	dottor_zoo:        3.00,
+	votante:           0.50,
+	tifoso:            1.00,
+	indovino:          1.00,
+	oracolo:          50.00,
+	giocatore:         0.25,
+	spendaccione:      1.00,
+	slot_veteran:      2.00,
+	fortunello:        5.00,
+	doppio_tris:       5.00,
+	hat_trick:        10.00,
+	maniaco:          15.00,
+	primo_volo:          0.50,
+	volatile:            1.00,
+	acrobata_del_cielo:  3.00,
+	dio_del_volo:       10.00,
+	zoo_volante:        25.00,
+	abituale:            0.25,
+	fedele:            5.00,
+	paziente:        100.00,
+	paperone:          0.50,
+	benestante:        1.00,
+	bankroll:          5.00,
+	grande_ricco:    200.00,
+	collezionista:     2.00,
+	tuttofare:         5.00,
+	leggenda_assoluta: 20.00
+};
+
+const META = ['collezionista', 'tuttofare', 'leggenda_assoluta'];
 
 /** Restituisce l'array degli id sbloccati. */
 export function getUnlocked() {
@@ -67,6 +97,16 @@ export function getUnlocked() {
 	}
 }
 
+/** Controlla e sblocca achievement economici in base al saldo attuale. */
+export function checkEconomyAchievements() {
+	if (!browser) return;
+	const s = getSaldo();
+	if (s >= 20)  unlock('paperone');
+	if (s >= 50)  unlock('benestante');
+	if (s >= 100) unlock('bankroll');
+	if (s >= 200) unlock('grande_ricco');
+}
+
 /**
  * Sblocca un achievement. Restituisce true se era nuovo (appena sbloccato).
  * Emette l'evento globale 'achievement-unlocked' per il toast.
@@ -75,10 +115,21 @@ export function unlock(id) {
 	if (!browser) return false;
 	const current = getUnlocked();
 	if (current.includes(id)) return false;
-	localStorage.setItem('zoo_achievements', JSON.stringify([...current, id]));
+	const updated = [...current, id];
+	localStorage.setItem('zoo_achievements', JSON.stringify(updated));
+	addSaldo(ACHIEVEMENT_REWARDS[id] ?? 0, 'achievement');
 	const def = ACHIEVEMENTS.find((a) => a.id === id);
 	if (def) {
 		window.dispatchEvent(new CustomEvent('achievement-unlocked', { detail: def }));
+	}
+	// Auto-check meta achievement (solo per achievement non-meta, evita ricorsione)
+	if (!META.includes(id)) {
+		if (!updated.includes('collezionista') && updated.length >= 10) unlock('collezionista');
+		if (!updated.includes('tuttofare') && updated.length >= 20) unlock('tuttofare');
+		const nonMeta = ACHIEVEMENTS.filter((a) => !META.includes(a.id)).map((a) => a.id);
+		if (!updated.includes('leggenda_assoluta') && nonMeta.every((a) => updated.includes(a))) {
+			unlock('leggenda_assoluta');
+		}
 	}
 	return true;
 }
