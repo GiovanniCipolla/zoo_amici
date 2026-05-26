@@ -6,9 +6,30 @@
 	import Modal from '$lib/components/Modal.svelte';
 	import { logVisita } from '$lib/logger.js';
 	import { unlock, checkEconomyAchievements } from '$lib/achievements.js';
-	import { bonusVisitaOggi, getStreak } from '$lib/economia.js';
+	import { bonusVisitaOggi, getStreak, addSaldo } from '$lib/economia.js';
 
 	let bonusToast = $state(false);
+
+	// Easter egg: 10 tap sulla faccia di Yayà → +€50 (una volta sola)
+	let yayaTaps = $state(0);
+	let yayaEasterDone = $state(false);
+	let yayaEasterToast = $state(false);
+
+	function yayaTapFor(m) {
+		return m.nome === 'Yayà' ? handleYayaTap : null;
+	}
+
+	function handleYayaTap() {
+		if (yayaEasterDone) return;
+		yayaTaps++;
+		if (yayaTaps >= 10) {
+			yayaEasterDone = true;
+			if (browser) localStorage.setItem('zoo_easter_yaya', '1');
+			addSaldo(50, 'easter_egg_yaya');
+			yayaEasterToast = true;
+			setTimeout(() => (yayaEasterToast = false), 5000);
+		}
+	}
 
 	onMount(() => {
 		logVisita();
@@ -21,6 +42,9 @@
 			const streak = getStreak();
 			if (streak >= 7)  unlock('fedele');
 			if (streak >= 30) unlock('paziente');
+		}
+		if (browser) {
+			yayaEasterDone = !!localStorage.getItem('zoo_easter_yaya');
 		}
 	});
 
@@ -201,14 +225,14 @@
 				{#if categoriaMembers && categoriaMembers.length >= 3}
 					<div class="mini-podio">
 						<div class="mini-slot mini-second">
-							<CardAnimal membro={categoriaMembers[1]} rank={membri.indexOf(categoriaMembers[1]) + 1} onselect={openModal} />
+							<CardAnimal membro={categoriaMembers[1]} rank={membri.indexOf(categoriaMembers[1]) + 1} onselect={openModal} onEmojiTap={yayaTapFor(categoriaMembers[1])} />
 						</div>
 						<div class="mini-slot mini-first">
 							<div class="mini-crown">👑</div>
-							<CardAnimal membro={categoriaMembers[0]} rank={membri.indexOf(categoriaMembers[0]) + 1} onselect={openModal} />
+							<CardAnimal membro={categoriaMembers[0]} rank={membri.indexOf(categoriaMembers[0]) + 1} onselect={openModal} onEmojiTap={yayaTapFor(categoriaMembers[0])} />
 						</div>
 						<div class="mini-slot mini-third">
-							<CardAnimal membro={categoriaMembers[2]} rank={membri.indexOf(categoriaMembers[2]) + 1} onselect={openModal} />
+							<CardAnimal membro={categoriaMembers[2]} rank={membri.indexOf(categoriaMembers[2]) + 1} onselect={openModal} onEmojiTap={yayaTapFor(categoriaMembers[2])} />
 						</div>
 					</div>
 					{#if categoriaMembers.length > 3}
@@ -220,7 +244,7 @@
 						<div class="grid-base">
 							{#each categoriaMembers.slice(3) as membro}
 								{@const rank = membri.indexOf(membro) + 1}
-								<CardAnimal {membro} {rank} onselect={openModal} />
+								<CardAnimal {membro} {rank} onselect={openModal} onEmojiTap={yayaTapFor(membro)} />
 							{/each}
 						</div>
 					{/if}
@@ -228,7 +252,7 @@
 					<div class="grid-base">
 						{#each filtered as membro}
 							{@const rank = membri.indexOf(membro) + 1}
-							<CardAnimal {membro} {rank} onselect={openModal} />
+							<CardAnimal {membro} {rank} onselect={openModal} onEmojiTap={yayaTapFor(membro)} />
 						{/each}
 					</div>
 				{/if}
@@ -277,14 +301,14 @@
 			</div>
 			<div class="podio-grid">
 				<div class="podio-slot podio-second">
-					<CardAnimal membro={podio[1]} rank={2} onselect={openModal} />
+					<CardAnimal membro={podio[1]} rank={2} onselect={openModal} onEmojiTap={yayaTapFor(podio[1])} />
 				</div>
 				<div class="podio-slot podio-first">
 					<div class="crown-wrap" aria-hidden="true">👑</div>
-					<CardAnimal membro={podio[0]} rank={1} onselect={openModal} />
+					<CardAnimal membro={podio[0]} rank={1} onselect={openModal} onEmojiTap={yayaTapFor(podio[0])} />
 				</div>
 				<div class="podio-slot podio-third">
-					<CardAnimal membro={podio[2]} rank={3} onselect={openModal} />
+					<CardAnimal membro={podio[2]} rank={3} onselect={openModal} onEmojiTap={yayaTapFor(podio[2])} />
 				</div>
 			</div>
 		</section>
@@ -300,7 +324,7 @@
 		<section class="section grid-section">
 			<div class="cards-grid">
 				{#each resto as membro, i}
-					<CardAnimal {membro} rank={i + 4} onselect={openModal} />
+					<CardAnimal {membro} rank={i + 4} onselect={openModal} onEmojiTap={yayaTapFor(membro)} />
 				{/each}
 			</div>
 		</section>
@@ -318,6 +342,11 @@
 	<div class="bonus-toast">💰 +€0.50 bonus visita quotidiana</div>
 {/if}
 
+<!-- EASTER EGG YAYÀ TOAST -->
+{#if yayaEasterToast}
+	<div class="easter-toast">🦁 Hai scoperto il segreto del Re! +€50.00 nel portafoglio</div>
+{/if}
+
 <!-- MODAL -->
 {#if selected}
 	<Modal membro={selected} onclose={closeModal} />
@@ -325,6 +354,26 @@
 
 
 <style>
+	/* ── EASTER EGG TOAST ── */
+	.easter-toast {
+		position: fixed;
+		top: 1rem;
+		left: 50%;
+		transform: translateX(-50%);
+		z-index: 9999;
+		background: rgba(232, 184, 75, 0.18);
+		border: 1px solid rgba(232, 184, 75, 0.7);
+		color: #e8b84b;
+		font-size: 1rem;
+		font-weight: 700;
+		padding: 0.8rem 1.8rem;
+		border-radius: 999px;
+		white-space: nowrap;
+		animation: toastIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+		backdrop-filter: blur(8px);
+		box-shadow: 0 0 40px rgba(232, 184, 75, 0.25);
+	}
+
 	/* ── BONUS TOAST ── */
 	.bonus-toast {
 		position: fixed;

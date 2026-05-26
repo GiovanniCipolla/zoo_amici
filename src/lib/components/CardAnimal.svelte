@@ -1,5 +1,5 @@
 <script>
-	let { membro, rank, onselect } = $props();
+	let { membro, rank, onselect, onEmojiTap = null } = $props();
 
 	let card = $state(null);
 	let tiltX = $state(0);
@@ -74,7 +74,13 @@
 		</div>
 
 		<!-- emoji -->
-		<div class="emoji-wrap">
+		<div
+			class="emoji-wrap"
+			onclick={onEmojiTap ? (e) => { e.stopPropagation(); onEmojiTap(); } : undefined}
+			role={onEmojiTap ? 'button' : undefined}
+			tabindex={onEmojiTap ? 0 : undefined}
+			onkeydown={onEmojiTap ? (e) => e.key === 'Enter' && onEmojiTap() : undefined}
+		>
 			<span class="emoji" style="--float-delay: {(rank * 137) % 3000}ms">{membro.emoji}</span>
 		</div>
 
