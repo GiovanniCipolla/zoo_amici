@@ -1,6 +1,7 @@
 /**
  * Slot Machine — logica di gioco.
  * €2 per giro. Premi basati sul rank del membro.
+ * 3 paylines attive: riga top, middle, bottom.
  */
 
 import { membri } from './membri.js';
@@ -8,18 +9,20 @@ import { membri } from './membri.js';
 export const COSTO_GIRO = 2;
 
 function calcolaPremio(rank) {
-	if (rank <= 3) return 15;
-	if (rank <= 8) return 10;
-	if (rank <= 15) return 7;
-	return 4;
+	if (rank === 1) return 500; // Luisa — tier esclusivo
+	if (rank <= 3) return 100;  // Leggendario
+	if (rank <= 8) return 50;   // Epico
+	if (rank <= 15) return 10;  // Raro
+	return 4;                    // Comune
 }
 
 /** Probabilità tris per simbolo — inversamente proporzionale al premio */
 function calcolaProbabilita(rank) {
-	if (rank <= 3) return 0.0001;   // rarissimo
-	if (rank <= 8) return 0.0003;   // molto raro
-	if (rank <= 15) return 0.0006;  // raro
-	return 0.001;                    // poco comune
+	if (rank === 1) return 0.000005; // Luisa: praticamente impossibile
+	if (rank <= 3) return 0.0001;    // Leggendario: rarissimo
+	if (rank <= 8) return 0.0003;    // Epico: molto raro
+	if (rank <= 15) return 0.0006;   // Raro: raro
+	return 0.001;                     // Comune: poco comune
 }
 
 export const SLOT_SIMBOLI = membri.map((m, i) => ({
@@ -34,7 +37,19 @@ export const SLOT_SIMBOLI = membri.map((m, i) => ({
 	prob: calcolaProbabilita(i + 1)
 }));
 
-// Particelle per ogni animale vincente (fallback { emoji: '✨', extra: '⭐' } se tipo non trovato)
+/** Tier groups per la tabella premi */
+export const TIER_GROUPS = [
+	{ label: 'LUISA', premio: 500, colore: '#d4a020', icon: '🦁', prob: 'Leggenda' },
+	{ label: 'LEGGENDARIO', premio: 100, colore: '#ffd700', icon: '🏆', prob: 'Ultra Rara' },
+	{ label: 'EPICO', premio: 50, colore: '#c084fc', icon: '✨', prob: 'Molto Rara' },
+	{ label: 'RARO', premio: 10, colore: '#60a5fa', icon: '⭐', prob: 'Rara' },
+	{ label: 'COMUNE', premio: 4, colore: '#86efac', icon: '🎯', prob: 'Comune' }
+].map((t) => ({
+	...t,
+	simboli: SLOT_SIMBOLI.filter((s) => s.premio === t.premio)
+}));
+
+// Particelle per ogni animale vincente
 export const WIN_PARTICLES = {
 	leone: { emoji: '👑', extra: '✨' },
 	lupo: { emoji: '🌙', extra: '⭐' },
@@ -49,12 +64,9 @@ export const WIN_PARTICLES = {
 };
 
 /**
- * Esegue un giro della slot machine.
- * Ogni simbolo ha la propria probabilità di tris, inversamente
- * proporzionale al premio. Simboli top-rank sono rarissimi.
- * Restituisce { simboli, vincita, animale }
+ * Genera il risultato per una singola riga.
  */
-export function gira() {
+function giraRiga() {
 	const r = Math.random();
 	let cum = 0;
 
@@ -72,10 +84,38 @@ export function gira() {
 			{ length: 3 },
 			() => SLOT_SIMBOLI[Math.floor(Math.random() * SLOT_SIMBOLI.length)]
 		);
-	} while (
-		simboli[0].tipo === simboli[1].tipo &&
-		simboli[1].tipo === simboli[2].tipo
-	);
+	} while (simboli[0].tipo === simboli[1].tipo && simboli[1].tipo === simboli[2].tipo);
 
 	return { simboli, vincita: false, animale: null };
+}
+
+/**
+ * Esegue un giro della slot machine su 3 paylines.
+ *
+ * Restituisce:
+ * - griglia: array[3][3] dove griglia[riga][colonna] (0=top, 1=mid, 2=bot)
+ * - vincite: array di { linea (0|1|2), animale }
+ * - vincita: boolean
+ * - simboli: middle row (per compatibilità logger)
+ * - animale: animale più prezioso tra i vincitori (per compatibilità logger)
+ */
+export function gira() {
+	const righe = [giraRiga(), giraRiga(), giraRiga()];
+	const griglia = righe.map((r) => r.simboli); // griglia[row][col]
+	const vincite = righe
+		.map((r, i) => (r.vincita ? { linea: i, animale: r.animale } : null))
+		.filter(Boolean);
+
+	const animale =
+		vincite.length > 0
+			? vincite.reduce((best, v) => (v.animale.premio > best.animale.premio ? v : best)).animale
+			: null;
+
+	return {
+		griglia,
+		vincite,
+		vincita: vincite.length > 0,
+		simboli: griglia[1], // middle row per compatibilità logger
+		animale
+	};
 }

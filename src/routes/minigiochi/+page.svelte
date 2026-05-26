@@ -36,6 +36,18 @@
 			<p class="card-desc">Scegli un animale · sopravvivi il più a lungo possibile</p>
 			<span class="card-cta">Vola →</span>
 		</a>
+		<a href="/corsa" class="game-card card-corsa">
+			<span class="card-emoji">🏇</span>
+			<p class="card-title">Via Muraverde</p>
+			<p class="card-desc">7 animali · quote random · scommetti sul vincitore</p>
+			<span class="card-cta">Corri →</span>
+		</a>
+		<a href="/cenzino" class="game-card card-cenzino">
+			<span class="card-emoji">🍺</span>
+			<p class="card-title">Zoo a Cenzino</p>
+			<p class="card-desc">€1 a partita · ritirati prima che l'animale sviene</p>
+			<span class="card-cta">Bevi →</span>
+		</a>
 	</div>
 
 	<div class="compat-section">
@@ -221,6 +233,23 @@
 		border-color: rgba(255, 215, 0, 0.35);
 		transform: translateY(-5px) scale(1.02);
 		box-shadow: 0 12px 40px rgba(255, 215, 0, 0.15);
+	}
+
+	.card-corsa:hover {
+		background: rgba(34, 197, 94, 0.08);
+		border-color: rgba(34, 197, 94, 0.35);
+		box-shadow: 0 12px 40px rgba(34, 197, 94, 0.15);
+	}
+	.card-corsa:hover .card-cta {
+		color: rgba(34, 197, 94, 0.8);
+	}
+	.card-cenzino:hover {
+		background: rgba(245, 158, 11, 0.1);
+		border-color: rgba(245, 158, 11, 0.4);
+		box-shadow: 0 12px 40px rgba(245, 158, 11, 0.18);
+	}
+	.card-cenzino:hover .card-cta {
+		color: rgba(245, 158, 11, 0.8);
 	}
 
 	.card-emoji {

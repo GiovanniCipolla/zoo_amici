@@ -2,13 +2,13 @@
 	import { onMount, onDestroy } from 'svelte';
 	import { browser } from '$app/environment';
 	import { goto } from '$app/navigation';
-	import { SLOT_SIMBOLI, WIN_PARTICLES, COSTO_GIRO, gira } from '$lib/slots.js';
+	import { SLOT_SIMBOLI, WIN_PARTICLES, COSTO_GIRO, TIER_GROUPS, gira } from '$lib/slots.js';
 	import { getSaldo, spendSaldo, addSaldo } from '$lib/economia.js';
 	import { logSlotGiro } from '$lib/logger.js';
 	import { unlock, checkEconomyAchievements } from '$lib/achievements.js';
 
 	// ── Stato ─────────────────────────────────────────────────────────
-	// Ogni reel mostra 3 simboli: [top, middle(payline), bottom]
+	// reels[reel][posizione]: ogni reel è una colonna con 3 simboli [top, mid, bot]
 	let reels = $state([
 		[SLOT_SIMBOLI[0], SLOT_SIMBOLI[3], SLOT_SIMBOLI[6]],
 		[SLOT_SIMBOLI[1], SLOT_SIMBOLI[4], SLOT_SIMBOLI[7]],
@@ -19,12 +19,14 @@
 	let reelSettled = $state([false, false, false]);
 	let spinning = $state(false);
 	let vincita = $state(false);
-	let animaleVincente = $state(null);
+	let vinciteLinee = $state([]); // [{ linea: 0|1|2, animale }]
+	let animaleVincente = $state(null); // animale più prezioso per l'overlay
 	let showWin = $state(false);
 	let saldo = $state(0);
 	const saldoInsuff = $derived(saldo < COSTO_GIRO);
 	let particles = $state([]);
-	let ultimoRisultato = $state(null); // [sym, sym, sym] dell'ultimo giro
+	let girato = $state(false);
+	const totalPremioVinto = $derived(vinciteLinee.reduce((s, v) => s + v.animale.premio, 0));
 
 	const intervals = [null, null, null];
 
@@ -54,7 +56,6 @@
 		intervals[i] = null;
 		reels[i] = finalSymbols;
 		reelSpinning[i] = false;
-		// Animazione rimbalzo alla fermata
 		setTimeout(() => {
 			reelSettled[i] = true;
 			setTimeout(() => {
@@ -64,8 +65,8 @@
 	}
 
 	function buildParticles(animale) {
-		const cfg = WIN_PARTICLES[animale.tipo] ?? { emoji: '✨', extra: '⭐' };
-		return Array.from({ length: 20 }, (_, i) => ({
+		const cfg = WIN_PARTICLES[animale.animale] ?? { emoji: '✨', extra: '⭐' };
+		return Array.from({ length: 24 }, (_, i) => ({
 			id: i,
 			emoji: i % 3 === 0 ? cfg.extra : cfg.emoji,
 			x: 5 + Math.random() * 90,
@@ -76,18 +77,23 @@
 		}));
 	}
 
+	function lineaVince(row) {
+		return vinciteLinee.some((v) => v.linea === row);
+	}
+
 	async function handleGira() {
 		if (spinning || saldoInsuff) return;
 
 		spendSaldo(COSTO_GIRO);
 		saldo = getSaldo();
 
-		// Reset stato precedente
+		// Reset
 		vincita = false;
+		vinciteLinee = [];
 		animaleVincente = null;
 		showWin = false;
-		ultimoRisultato = null;
 		particles = [];
+		girato = true;
 
 		const risultato = gira();
 
@@ -100,53 +106,54 @@
 		checkEconomyAchievements();
 
 		spinning = true;
-
-		// Avvia tutti e 3 i reel
 		startReel(0);
 		startReel(1);
 		startReel(2);
 
-		const s = risultato.simboli;
+		// griglia[riga][colonna] → reel[col] = [griglia[0][col], griglia[1][col], griglia[2][col]]
+		const g = risultato.griglia;
 
-		// Ferma i reel in cascata: 1.5s → 2.3s → 3.1s
 		setTimeout(() => {
-			stopReel(0, [randomSym(), s[0], randomSym()]);
+			stopReel(0, [g[0][0], g[1][0], g[2][0]]);
 		}, 1500);
 
 		setTimeout(() => {
-			stopReel(1, [randomSym(), s[1], randomSym()]);
+			stopReel(1, [g[0][1], g[1][1], g[2][1]]);
 		}, 2300);
 
 		setTimeout(async () => {
-			stopReel(2, [randomSym(), s[2], randomSym()]);
+			stopReel(2, [g[0][2], g[1][2], g[2][2]]);
 			spinning = false;
-			ultimoRisultato = s;
 
+			vinciteLinee = risultato.vincite;
 			vincita = risultato.vincita;
 			animaleVincente = risultato.animale;
 
 			if (vincita) {
 				unlock('fortunello');
-				addSaldo(animaleVincente.premio, 'slot_vincita');
+				for (const v of vinciteLinee) {
+					addSaldo(v.animale.premio, 'slot_vincita');
+				}
 				saldo = getSaldo();
-				// Achievement vincite
+
 				const nVincite = parseInt(localStorage.getItem('zoo_slots_wins') ?? '0', 10) + 1;
 				localStorage.setItem('zoo_slots_wins', String(nVincite));
 				if (nVincite >= 2) unlock('doppio_tris');
 				if (nVincite >= 3) unlock('hat_trick');
 				if (nVincite >= 5) unlock('maniaco');
 				checkEconomyAchievements();
+
 				particles = buildParticles(animaleVincente);
 				setTimeout(() => {
 					showWin = true;
 				}, 350);
 			}
 
-			// Log Discord (fire-and-forget)
 			logSlotGiro({
 				simboli: risultato.simboli,
 				vincita: risultato.vincita,
 				animale: risultato.animale,
+				vincite: risultato.vincite,
 				saldo
 			});
 		}, 3100);
@@ -158,7 +165,7 @@
 	}
 </script>
 
-<!-- Sfondo blob identico alla main page -->
+<!-- Sfondo blob -->
 <div class="bg-blobs" aria-hidden="true">
 	<div class="blob blob-1"></div>
 	<div class="blob blob-2"></div>
@@ -173,7 +180,7 @@
 			<span class="title-icon">🎰</span>
 			<span class="title-text">Slot Machine<br />Animalesca</span>
 		</h1>
-		<p class="subtitle">Tris = vincita &middot; 2% di probabilità &middot; €{COSTO_GIRO} a giro</p>
+		<p class="subtitle">3 paylines attive &middot; tris su una riga = vincita &middot; €{COSTO_GIRO} a giro</p>
 	</header>
 
 	<!-- ── WALLET BAR ── -->
@@ -186,40 +193,55 @@
 	<!-- ── MACHINE ── -->
 	<div class="machine-wrap">
 		<div class="machine">
-			<!-- Luce decorativa in cima -->
+			<!-- Luci decorative in cima -->
 			<div class="machine-lights" aria-hidden="true">
-				{#each Array(7) as _, i}
+				{#each Array(9) as _, i}
 					<div class="light" style="--i:{i}"></div>
 				{/each}
 			</div>
 
-			<!-- REELS -->
+			<!-- REELS + PAYLINE OVERLAY -->
 			<div class="reels-area">
-				<!-- Indicatore payline -->
-				<div class="payline-bar" aria-hidden="true">
-					<div class="payline-line"></div>
-					<span class="payline-label">PAYLINE</span>
-					<div class="payline-line"></div>
+				<!-- Etichette payline (sinistra) -->
+				<div class="payline-labels" aria-hidden="true">
+					{#each [0, 1, 2] as row}
+						<div class="pl-row" class:pl-win={lineaVince(row)}>
+							<span class="pl-num">L{row + 1}</span>
+						</div>
+					{/each}
 				</div>
 
+				<!-- I 3 reel (colonne) -->
 				<div class="reels-row">
 					{#each reels as reel, ri}
 						<div
 							class="reel"
 							class:spinning={reelSpinning[ri]}
 							class:settled={reelSettled[ri]}
-							class:won={vincita && ultimoRisultato !== null}
 						>
 							{#each reel as sym, si}
-								<div
-									class="sym-cell"
-									class:payline-cell={si === 1}
-									class:top-cell={si === 0}
-									class:bot-cell={si === 2}
-								>
+								<div class="sym-cell" class:row-win={girato && lineaVince(si)}>
 									<span class="sym-emoji">{sym.emoji}</span>
 								</div>
 							{/each}
+						</div>
+					{/each}
+
+					<!-- Linee orizzontali overlay (sopra i reel) -->
+					<div class="paylines-overlay" aria-hidden="true">
+						{#each [0, 1, 2] as row}
+							<div class="overlay-row" class:overlay-win={girato && lineaVince(row)}>
+								<div class="overlay-line"></div>
+							</div>
+						{/each}
+					</div>
+				</div>
+
+				<!-- Badge vincita (destra) -->
+				<div class="payline-wins" aria-hidden="true">
+					{#each [0, 1, 2] as row}
+						<div class="pl-win-badge" class:visible={girato && lineaVince(row)}>
+							WIN!
 						</div>
 					{/each}
 				</div>
@@ -245,19 +267,53 @@
 				</button>
 			</div>
 
-			<!-- Risultato ultimo giro (senza vincita) -->
-			{#if ultimoRisultato && !vincita}
+			<!-- Messaggio risultato senza vincita -->
+			{#if girato && !vincita && !spinning}
 				<div class="lose-msg">
-					<span>Quasi...</span>
-					<span class="lose-syms">{ultimoRisultato.map((s) => s.emoji).join('  ')}</span>
+					<span>Quasi... riprova!</span>
 				</div>
 			{/if}
 
-			<!-- Luce decorativa in fondo -->
+			<!-- Luci decorative in fondo -->
 			<div class="machine-lights bottom-lights" aria-hidden="true">
-				{#each Array(7) as _, i}
+				{#each Array(9) as _, i}
 					<div class="light" style="--i:{i}"></div>
 				{/each}
+			</div>
+		</div>
+
+		<!-- ── LEGENDA PREMI ── -->
+		<div class="paytable">
+			<div class="paytable-header">
+				<span>📋</span>
+				<span>TABELLA PREMI</span>
+			</div>
+			<p class="paytable-sub">3 simboli uguali su qualsiasi riga = vincita</p>
+
+			<div class="paytable-tiers">
+				{#each TIER_GROUPS as tier}
+					{#if tier.simboli.length > 0}
+						<div class="tier-row" class:tier-luisa={tier.label === 'LUISA'} style="--tier-color: {tier.colore}">
+							<div class="tier-left">
+								<span class="tier-icon">{tier.icon}</span>
+								<div class="tier-info">
+									<span class="tier-label">{tier.label}</span>
+									<span class="tier-prob">{tier.prob}</span>
+								</div>
+							</div>
+							<div class="tier-symbols">
+								{#each tier.simboli as s}
+									<span class="tier-sym" title={s.nome}>{s.emoji}</span>
+								{/each}
+							</div>
+							<div class="tier-prize">+€{tier.premio}</div>
+						</div>
+					{/if}
+				{/each}
+			</div>
+
+			<div class="paytable-note">
+				🎲 Ogni riga è indipendente &middot; Si può vincere su più righe contemporaneamente
 			</div>
 		</div>
 
@@ -268,8 +324,7 @@
 </main>
 
 <!-- ── WIN OVERLAY ── -->
-{#if showWin && animaleVincente}
-	<!-- particelle -->
+{#if showWin && vinciteLinee.length > 0}
 	{#each particles as p (p.id)}
 		<div
 			class="particle"
@@ -296,14 +351,40 @@
 		style="--win-colore: {animaleVincente.colore}"
 	>
 		<div class="win-box" onclick={(e) => e.stopPropagation()}>
-			<div class="win-tris">
-				{animaleVincente.emoji}{animaleVincente.emoji}{animaleVincente.emoji}
-			</div>
-			<div class="win-jackpot">✨ JACKPOT! ✨</div>
-			<div class="win-grido">{animaleVincente.grido}</div>
-			<div class="win-nome">{animaleVincente.nome} porta fortuna!</div>
-			<div class="win-sub">Probabilità: 2% &middot; Sei un animale fortunato</div>
-			<div class="win-premio">+€{animaleVincente.premio}.00 vinti! 💰</div>
+			{#if vinciteLinee.length === 1}
+				<!-- Vincita singola -->
+				<div class="win-tris">
+					{vinciteLinee[0].animale.emoji}{vinciteLinee[0].animale.emoji}{vinciteLinee[0].animale.emoji}
+				</div>
+				<div class="win-line-tag">LINEA {vinciteLinee[0].linea + 1}</div>
+				{#if vinciteLinee[0].animale.premio === 500}
+					<div class="win-jackpot win-luisa">🦁 LEGGENDA ASSOLUTA 🦁</div>
+					<div class="win-grido">LUISA REGNA!</div>
+					<div class="win-nome">La Leonessa ha colpito — praticamente impossibile</div>
+				{:else}
+					<div class="win-jackpot">✨ JACKPOT! ✨</div>
+					<div class="win-grido">{vinciteLinee[0].animale.grido}</div>
+					<div class="win-nome">{vinciteLinee[0].animale.nome} porta fortuna!</div>
+				{/if}
+			{:else}
+				<!-- Multi vincita -->
+				<div class="win-multi-title">🎊 MULTI WIN! 🎊</div>
+				<div class="win-multi-list">
+					{#each vinciteLinee as v}
+						<div class="win-multi-row">
+							<span class="win-multi-tris">{v.animale.emoji}{v.animale.emoji}{v.animale.emoji}</span>
+							<span class="win-multi-info">
+								<span class="win-multi-nome">{v.animale.nome}</span>
+								<span class="win-multi-linea">Linea {v.linea + 1}</span>
+							</span>
+							<span class="win-multi-prize">+€{v.animale.premio}</span>
+						</div>
+					{/each}
+				</div>
+			{/if}
+
+			<div class="win-sub">Sei un animale fortunato! 🐾</div>
+			<div class="win-premio">+€{totalPremioVinto}.00 vinti! 💰</div>
 			<button class="win-close" onclick={chiudiWin}>Continua a giocare →</button>
 		</div>
 	</div>
@@ -350,19 +431,13 @@
 		animation: blobDrift3 16s ease-in-out infinite alternate;
 	}
 	@keyframes blobDrift1 {
-		to {
-			transform: translate(60px, 40px);
-		}
+		to { transform: translate(60px, 40px); }
 	}
 	@keyframes blobDrift2 {
-		to {
-			transform: translate(-50px, -30px);
-		}
+		to { transform: translate(-50px, -30px); }
 	}
 	@keyframes blobDrift3 {
-		to {
-			transform: translate(-45%, -55%);
-		}
+		to { transform: translate(-45%, -55%); }
 	}
 
 	/* ── LAYOUT ── */
@@ -413,13 +488,8 @@
 		animation: iconPulse 2s ease-in-out infinite;
 	}
 	@keyframes iconPulse {
-		0%,
-		100% {
-			transform: scale(1);
-		}
-		50% {
-			transform: scale(1.12);
-		}
+		0%, 100% { transform: scale(1); }
+		50% { transform: scale(1.12); }
 	}
 	.title-text {
 		font-size: 2rem;
@@ -447,11 +517,9 @@
 		border: 1px solid rgba(255, 215, 0, 0.25);
 		border-radius: 12px;
 		width: 100%;
-		max-width: 440px;
+		max-width: 480px;
 	}
-	.wallet-icon {
-		font-size: 1.2rem;
-	}
+	.wallet-icon { font-size: 1.2rem; }
 	.wallet-saldo {
 		font-size: 1.3rem;
 		font-weight: 900;
@@ -471,13 +539,13 @@
 		align-items: center;
 		gap: 1.5rem;
 		width: 100%;
-		max-width: 440px;
+		max-width: 480px;
 	}
 	.machine {
 		background: linear-gradient(160deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
 		border: 2px solid rgba(255, 215, 0, 0.3);
 		border-radius: 24px;
-		padding: 1.5rem 1.5rem 1.5rem;
+		padding: 1.5rem;
 		width: 100%;
 		box-shadow:
 			0 0 40px rgba(232, 184, 75, 0.15),
@@ -488,11 +556,11 @@
 		gap: 1.25rem;
 	}
 
-	/* Luci decorative */
+	/* ── LUCI ── */
 	.machine-lights {
 		display: flex;
 		justify-content: center;
-		gap: 0.5rem;
+		gap: 0.4rem;
 	}
 	.light {
 		width: 10px;
@@ -501,54 +569,137 @@
 		background: #ffd700;
 		box-shadow: 0 0 8px #ffd700;
 		animation: lightBlink 1.2s ease-in-out infinite;
-		animation-delay: calc(var(--i) * 0.17s);
+		animation-delay: calc(var(--i) * 0.13s);
 	}
 	@keyframes lightBlink {
-		0%,
-		100% {
-			opacity: 1;
-		}
-		50% {
-			opacity: 0.2;
-		}
+		0%, 100% { opacity: 1; }
+		50% { opacity: 0.15; }
 	}
 	.bottom-lights .light {
 		animation-direction: reverse;
 	}
 
-	/* ── REELS ── */
+	/* ── REELS AREA (3 paylines) ── */
 	.reels-area {
-		position: relative;
+		display: flex;
+		flex-direction: row;
+		align-items: stretch;
+		gap: 0.4rem;
+	}
+
+	/* Etichette numeriche sinistra */
+	.payline-labels {
 		display: flex;
 		flex-direction: column;
-		gap: 0.25rem;
+		justify-content: stretch;
 	}
-	.payline-bar {
+	.pl-row {
+		flex: 1;
 		display: flex;
 		align-items: center;
-		gap: 0.5rem;
-		pointer-events: none;
+		justify-content: center;
+		min-height: 80px;
 	}
-	.payline-line {
+	.pl-num {
+		font-size: 0.62rem;
+		font-weight: 900;
+		letter-spacing: 0.06em;
+		color: rgba(255, 215, 0, 0.3);
+		transition: color 0.3s, text-shadow 0.3s;
+		writing-mode: horizontal-tb;
+	}
+	.pl-row.pl-win .pl-num {
+		color: #ffd700;
+		text-shadow: 0 0 10px #ffd700, 0 0 20px rgba(255, 215, 0, 0.5);
+		animation: plNumPulse 0.6s ease-in-out infinite alternate;
+	}
+	@keyframes plNumPulse {
+		from { transform: scale(1); }
+		to { transform: scale(1.15); }
+	}
+
+	/* Badge vincita destra */
+	.payline-wins {
+		display: flex;
+		flex-direction: column;
+		justify-content: stretch;
+	}
+	.pl-win-badge {
 		flex: 1;
-		height: 1px;
-		background: linear-gradient(90deg, transparent, rgba(255, 215, 0, 0.5), transparent);
+		min-height: 80px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-size: 0.55rem;
+		font-weight: 900;
+		letter-spacing: 0.1em;
+		color: #ffd700;
+		opacity: 0;
+		transition: opacity 0.2s;
+		min-width: 32px;
 	}
-	.payline-label {
-		font-size: 0.6rem;
-		letter-spacing: 0.15em;
-		color: rgba(255, 215, 0, 0.6);
-		font-weight: 700;
+	.pl-win-badge.visible {
+		opacity: 1;
+		text-shadow: 0 0 10px #ffd700;
+		animation: winBadgePulse 0.5s ease-in-out infinite alternate;
 	}
+	@keyframes winBadgePulse {
+		from { opacity: 0.7; }
+		to { opacity: 1; transform: scale(1.08); }
+	}
+
+	/* ── REELS ── */
 	.reels-row {
 		display: flex;
-		gap: 0.75rem;
+		gap: 0.6rem;
 		justify-content: center;
+		position: relative;
+		flex: 1;
+	}
+
+	/* Overlay linee orizzontali */
+	.paylines-overlay {
+		position: absolute;
+		inset: 0;
+		display: flex;
+		flex-direction: column;
+		pointer-events: none;
+		z-index: 2;
+	}
+	.overlay-row {
+		flex: 1;
+		display: flex;
+		align-items: center;
+		padding: 0 0.3rem;
+	}
+	.overlay-line {
+		width: 100%;
+		height: 1px;
+		background: linear-gradient(
+			90deg,
+			rgba(255, 215, 0, 0.25) 0%,
+			transparent 15%,
+			transparent 85%,
+			rgba(255, 215, 0, 0.25) 100%
+		);
+		transition: all 0.3s;
+	}
+	.overlay-row.overlay-win .overlay-line {
+		height: 2px;
+		background: linear-gradient(
+			90deg,
+			rgba(255, 215, 0, 0.8) 0%,
+			rgba(255, 215, 0, 0.2) 12%,
+			rgba(255, 215, 0, 0.2) 88%,
+			rgba(255, 215, 0, 0.8) 100%
+		);
+		box-shadow: 0 0 8px rgba(255, 215, 0, 0.6);
 	}
 
 	/* Singolo reel */
 	.reel {
-		width: 96px;
+		flex: 1;
+		max-width: 96px;
 		background: rgba(0, 0, 0, 0.4);
 		border: 1px solid rgba(255, 255, 255, 0.1);
 		border-radius: 12px;
@@ -562,70 +713,46 @@
 	.reel.settled {
 		animation: reelBounce 0.45s cubic-bezier(0.36, 0.07, 0.19, 0.97);
 	}
-	.reel.won .payline-cell {
-		background: rgba(255, 215, 0, 0.15);
-		border-color: rgba(255, 215, 0, 0.7);
-	}
-
 	@keyframes reelShake {
-		0%,
-		100% {
-			transform: translateY(0);
-		}
-		25% {
-			transform: translateY(-2px);
-		}
-		75% {
-			transform: translateY(2px);
-		}
+		0%, 100% { transform: translateY(0); }
+		25% { transform: translateY(-2px); }
+		75% { transform: translateY(2px); }
 	}
 	@keyframes reelBounce {
-		0% {
-			transform: translateY(-10px);
-		}
-		40% {
-			transform: translateY(4px);
-		}
-		70% {
-			transform: translateY(-2px);
-		}
-		100% {
-			transform: translateY(0);
-		}
+		0% { transform: translateY(-10px); }
+		40% { transform: translateY(4px); }
+		70% { transform: translateY(-2px); }
+		100% { transform: translateY(0); }
 	}
 
 	.sym-cell {
-		height: 88px;
+		height: 80px;
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-		transition: background 0.2s;
+		border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+		transition: background 0.3s, border-color 0.3s;
+		position: relative;
 	}
 	.sym-cell:last-child {
 		border-bottom: none;
 	}
-	.payline-cell {
-		border-top: 2px solid rgba(255, 215, 0, 0.35);
-		border-bottom: 2px solid rgba(255, 215, 0, 0.35);
-		background: rgba(255, 215, 0, 0.04);
-	}
-	.top-cell,
-	.bot-cell {
-		opacity: 0.38;
+	.sym-cell.row-win {
+		background: rgba(255, 215, 0, 0.12);
+		border-top: 2px solid rgba(255, 215, 0, 0.55) !important;
+		border-bottom: 2px solid rgba(255, 215, 0, 0.55) !important;
 	}
 
 	.sym-emoji {
-		font-size: 2.8rem;
+		font-size: 2.6rem;
 		line-height: 1;
 		display: block;
 		transition: filter 0.1s;
+		position: relative;
+		z-index: 3;
 	}
 	.spinning .sym-emoji {
 		filter: blur(1.5px);
-	}
-	.spinning .payline-cell .sym-emoji {
-		filter: blur(0.6px);
 	}
 
 	/* ── CONTROLLI ── */
@@ -633,7 +760,6 @@
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		gap: 1rem;
 	}
 	.spin-btn {
 		width: 100%;
@@ -661,9 +787,7 @@
 		opacity: 0;
 		transition: opacity 0.2s;
 	}
-	.spin-btn:hover:not(:disabled)::after {
-		opacity: 1;
-	}
+	.spin-btn:hover:not(:disabled)::after { opacity: 1; }
 	.spin-btn:hover:not(:disabled) {
 		transform: translateY(-2px);
 		box-shadow:
@@ -684,38 +808,128 @@
 		display: inline-block;
 		animation: rotate 0.7s linear infinite;
 	}
-	@keyframes rotate {
-		to {
-			transform: rotate(360deg);
-		}
-	}
+	@keyframes rotate { to { transform: rotate(360deg); } }
 
 	/* Messaggio perdita */
 	.lose-msg {
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		gap: 0.75rem;
-		padding: 0.6rem 1rem;
+		padding: 0.5rem 1rem;
 		background: rgba(255, 80, 80, 0.08);
 		border: 1px solid rgba(255, 80, 80, 0.2);
 		border-radius: 10px;
-		font-size: 0.9rem;
+		font-size: 0.88rem;
 		color: #ff9999;
 		animation: fadeIn 0.3s ease;
 	}
-	.lose-syms {
+	@keyframes fadeIn {
+		from { opacity: 0; transform: translateY(4px); }
+		to { opacity: 1; transform: translateY(0); }
+	}
+
+	/* ── TABELLA PREMI ── */
+	.paytable {
+		width: 100%;
+		background: rgba(0, 0, 0, 0.3);
+		border: 1px solid rgba(255, 215, 0, 0.18);
+		border-radius: 18px;
+		padding: 1.25rem;
+		display: flex;
+		flex-direction: column;
+		gap: 0.75rem;
+	}
+	.paytable-header {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		font-size: 0.8rem;
+		font-weight: 900;
+		letter-spacing: 0.12em;
+		color: rgba(255, 215, 0, 0.8);
+		text-transform: uppercase;
+	}
+	.paytable-sub {
+		margin: 0;
+		font-size: 0.72rem;
+		color: rgba(255, 255, 255, 0.35);
+	}
+	.paytable-tiers {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+	}
+	.tier-row {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+		padding: 0.6rem 0.8rem;
+		background: color-mix(in srgb, var(--tier-color) 8%, transparent);
+		border: 1px solid color-mix(in srgb, var(--tier-color) 30%, transparent);
+		border-radius: 12px;
+		transition: background 0.2s;
+	}
+	.tier-row:hover {
+		background: color-mix(in srgb, var(--tier-color) 14%, transparent);
+	}
+	.tier-luisa {
+		border-width: 2px;
+		background: color-mix(in srgb, #d4a020 14%, transparent);
+		animation: luisaGlow 2s ease-in-out infinite alternate;
+	}
+	.tier-luisa .tier-prize {
 		font-size: 1.1rem;
 	}
-	@keyframes fadeIn {
-		from {
-			opacity: 0;
-			transform: translateY(4px);
-		}
-		to {
-			opacity: 1;
-			transform: translateY(0);
-		}
+	@keyframes luisaGlow {
+		from { box-shadow: 0 0 6px rgba(212, 160, 32, 0.2); }
+		to   { box-shadow: 0 0 22px rgba(212, 160, 32, 0.55); }
+	}
+	.tier-left {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		min-width: 110px;
+	}
+	.tier-icon { font-size: 1.1rem; }
+	.tier-info {
+		display: flex;
+		flex-direction: column;
+		gap: 0.1rem;
+	}
+	.tier-label {
+		font-size: 0.65rem;
+		font-weight: 900;
+		letter-spacing: 0.08em;
+		color: var(--tier-color);
+	}
+	.tier-prob {
+		font-size: 0.58rem;
+		color: rgba(255, 255, 255, 0.35);
+	}
+	.tier-symbols {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.15rem;
+		flex: 1;
+	}
+	.tier-sym {
+		font-size: 1.15rem;
+		line-height: 1;
+		filter: drop-shadow(0 0 3px color-mix(in srgb, var(--tier-color) 50%, transparent));
+	}
+	.tier-prize {
+		font-size: 0.9rem;
+		font-weight: 900;
+		color: var(--tier-color);
+		text-shadow: 0 0 10px color-mix(in srgb, var(--tier-color) 50%, transparent);
+		min-width: 38px;
+		text-align: right;
+	}
+	.paytable-note {
+		font-size: 0.67rem;
+		color: rgba(255, 255, 255, 0.25);
+		text-align: center;
+		line-height: 1.5;
 	}
 
 	.disclaimer {
@@ -739,38 +953,16 @@
 		animation-name: particleRise;
 	}
 	@keyframes particleFall {
-		0% {
-			transform: translateY(0) rotate(0deg) scale(0.5);
-			opacity: 0;
-		}
-		10% {
-			opacity: 1;
-			transform: translateY(10vh) rotate(30deg) scale(1);
-		}
-		80% {
-			opacity: 0.9;
-		}
-		100% {
-			transform: translateY(110vh) rotate(720deg) scale(0.8);
-			opacity: 0;
-		}
+		0% { transform: translateY(0) rotate(0deg) scale(0.5); opacity: 0; }
+		10% { opacity: 1; transform: translateY(10vh) rotate(30deg) scale(1); }
+		80% { opacity: 0.9; }
+		100% { transform: translateY(110vh) rotate(720deg) scale(0.8); opacity: 0; }
 	}
 	@keyframes particleRise {
-		0% {
-			transform: translateY(0) rotate(0deg) scale(0.5);
-			opacity: 0;
-		}
-		10% {
-			opacity: 1;
-			transform: translateY(-10vh) rotate(-30deg) scale(1);
-		}
-		80% {
-			opacity: 0.9;
-		}
-		100% {
-			transform: translateY(-110vh) rotate(-720deg) scale(0.8);
-			opacity: 0;
-		}
+		0% { transform: translateY(0) rotate(0deg) scale(0.5); opacity: 0; }
+		10% { opacity: 1; transform: translateY(-10vh) rotate(-30deg) scale(1); }
+		80% { opacity: 0.9; }
+		100% { transform: translateY(-110vh) rotate(-720deg) scale(0.8); opacity: 0; }
 	}
 
 	/* ── WIN OVERLAY ── */
@@ -787,20 +979,15 @@
 		animation: overlayIn 0.3s ease;
 	}
 	@keyframes overlayIn {
-		from {
-			opacity: 0;
-		}
-		to {
-			opacity: 1;
-		}
+		from { opacity: 0; }
+		to { opacity: 1; }
 	}
-
 	.win-box {
 		background: linear-gradient(160deg, #1a1a2e, #16213e);
 		border: 2px solid var(--win-colore);
 		border-radius: 28px;
 		padding: 2.5rem 2rem;
-		max-width: 380px;
+		max-width: 400px;
 		width: 100%;
 		text-align: center;
 		display: flex;
@@ -813,33 +1000,31 @@
 		animation: winBoxIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
 	}
 	@keyframes winBoxIn {
-		from {
-			opacity: 0;
-			transform: scale(0.5) rotate(-5deg);
-		}
-		to {
-			opacity: 1;
-			transform: scale(1) rotate(0deg);
-		}
+		from { opacity: 0; transform: scale(0.5) rotate(-5deg); }
+		to { opacity: 1; transform: scale(1) rotate(0deg); }
 	}
 
+	/* Vincita singola */
 	.win-tris {
 		font-size: 3.5rem;
 		line-height: 1;
-		animation: trisPulse 0.8s ease-in-out infinite alternate;
 		letter-spacing: 0.1em;
+		animation: trisPulse 0.8s ease-in-out infinite alternate;
 	}
 	@keyframes trisPulse {
-		from {
-			transform: scale(1);
-			filter: drop-shadow(0 0 8px var(--win-colore));
-		}
-		to {
-			transform: scale(1.12);
-			filter: drop-shadow(0 0 24px var(--win-colore));
-		}
+		from { transform: scale(1); filter: drop-shadow(0 0 8px var(--win-colore)); }
+		to { transform: scale(1.12); filter: drop-shadow(0 0 24px var(--win-colore)); }
 	}
-
+	.win-line-tag {
+		font-size: 0.65rem;
+		font-weight: 900;
+		letter-spacing: 0.15em;
+		color: rgba(255, 215, 0, 0.7);
+		background: rgba(255, 215, 0, 0.1);
+		border: 1px solid rgba(255, 215, 0, 0.3);
+		padding: 0.2rem 0.7rem;
+		border-radius: 999px;
+	}
 	.win-jackpot {
 		font-size: 2rem;
 		font-weight: 900;
@@ -852,14 +1037,23 @@
 		animation: shimmer 1.5s linear infinite;
 	}
 	@keyframes shimmer {
-		0% {
-			background-position: 0% 50%;
-		}
-		100% {
-			background-position: 200% 50%;
-		}
+		0% { background-position: 0% 50%; }
+		100% { background-position: 200% 50%; }
 	}
-
+	.win-luisa {
+		font-size: 1.6rem;
+		background: linear-gradient(135deg, #d4a020, #ffd700, #fff8dc, #ffd700, #d4a020);
+		background-size: 300% 300%;
+		-webkit-background-clip: text;
+		-webkit-text-fill-color: transparent;
+		background-clip: text;
+		animation: luisaShimmer 1.2s linear infinite;
+		text-shadow: none;
+	}
+	@keyframes luisaShimmer {
+		0% { background-position: 0% 50%; }
+		100% { background-position: 300% 50%; }
+	}
 	.win-grido {
 		font-size: 1.8rem;
 		font-weight: 900;
@@ -868,33 +1062,79 @@
 		animation: gridoPulse 0.6s ease-in-out infinite alternate;
 	}
 	@keyframes gridoPulse {
-		from {
-			transform: scale(1);
-		}
-		to {
-			transform: scale(1.06);
-		}
+		from { transform: scale(1); }
+		to { transform: scale(1.06); }
 	}
-
 	.win-nome {
 		font-size: 1.1rem;
 		font-weight: 600;
 		color: #f0f0f0;
 	}
 
+	/* Multi vincita */
+	.win-multi-title {
+		font-size: 1.8rem;
+		font-weight: 900;
+		letter-spacing: 0.06em;
+		background: linear-gradient(135deg, #ffd700, #ff9a00, #ffd700);
+		background-size: 200%;
+		-webkit-background-clip: text;
+		-webkit-text-fill-color: transparent;
+		background-clip: text;
+		animation: shimmer 1.5s linear infinite;
+	}
+	.win-multi-list {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+		width: 100%;
+	}
+	.win-multi-row {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+		background: rgba(255, 255, 255, 0.05);
+		border: 1px solid rgba(255, 215, 0, 0.2);
+		border-radius: 12px;
+		padding: 0.5rem 0.75rem;
+	}
+	.win-multi-tris {
+		font-size: 1.4rem;
+		letter-spacing: 0.05em;
+	}
+	.win-multi-info {
+		display: flex;
+		flex-direction: column;
+		gap: 0.1rem;
+		flex: 1;
+		text-align: left;
+	}
+	.win-multi-nome {
+		font-size: 0.8rem;
+		font-weight: 700;
+		color: #f0f0f0;
+	}
+	.win-multi-linea {
+		font-size: 0.65rem;
+		color: rgba(255, 215, 0, 0.6);
+	}
+	.win-multi-prize {
+		font-size: 1rem;
+		font-weight: 900;
+		color: #ffd700;
+	}
+
 	.win-sub {
 		font-size: 0.78rem;
 		color: #666;
 	}
-
 	.win-premio {
-		font-size: 1.1rem;
+		font-size: 1.2rem;
 		font-weight: 800;
 		color: #ffd700;
 		text-shadow: 0 0 12px rgba(255, 215, 0, 0.5);
 		animation: gridoPulse 0.6s ease-in-out infinite alternate;
 	}
-
 	.win-close {
 		margin-top: 0.5rem;
 		padding: 0.75rem 2rem;
@@ -914,20 +1154,13 @@
 	}
 
 	@media (max-width: 480px) {
-		.title-text {
-			font-size: 1.6rem;
-		}
-		.reel {
-			width: 82px;
-		}
-		.sym-emoji {
-			font-size: 2.3rem;
-		}
-		.sym-cell {
-			height: 76px;
-		}
-		.reels-row {
-			gap: 0.5rem;
-		}
+		.title-text { font-size: 1.6rem; }
+		.reel { max-width: 78px; }
+		.sym-emoji { font-size: 2.1rem; }
+		.sym-cell { height: 70px; }
+		.pl-row { min-height: 70px; }
+		.pl-win-badge { min-height: 70px; }
+		.reels-row { gap: 0.4rem; }
+		.tier-left { min-width: 90px; }
 	}
 </style>
