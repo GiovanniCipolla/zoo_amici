@@ -48,6 +48,12 @@
 			<p class="card-desc">€1 a partita · ritirati prima che l'animale sviene</p>
 			<span class="card-cta">Bevi →</span>
 		</a>
+		<a href="/bingo" class="game-card card-bingo">
+			<span class="card-emoji">🎱</span>
+			<p class="card-title">Bingo a Pescara</p>
+			<p class="card-desc">€0.50 a cartella · sfida i 32 animali al tavolo</p>
+			<span class="card-cta">Gioca →</span>
+		</a>
 	</div>
 
 	<div class="compat-section">
@@ -251,6 +257,14 @@
 	.card-cenzino:hover .card-cta {
 		color: rgba(245, 158, 11, 0.8);
 	}
+	.card-bingo:hover {
+		background: rgba(109, 40, 217, 0.1);
+		border-color: rgba(109, 40, 217, 0.4);
+		box-shadow: 0 12px 40px rgba(109, 40, 217, 0.18);
+	}
+	.card-bingo:hover .card-cta {
+		color: rgba(167, 139, 250, 0.9);
+	}
 
 	.card-emoji {
 		font-size: 3.5rem;
@@ -311,8 +325,20 @@
 	@media (max-width: 600px) {
 		main { padding: 0 0.9rem 3rem; }
 		.back-wrap { padding: 0.7rem 0.9rem 0; }
-		.cards-grid { grid-template-columns: 1fr; }
+		.cards-grid {
+			grid-template-columns: 1fr 1fr;
+			gap: 0.8rem;
+		}
 		h1 { flex-direction: column; gap: 0.3rem; }
 		.title-text { text-align: center; }
+		header { padding: 2rem 0.5rem 1.5rem; }
+		.game-card {
+			padding: 1.5rem 0.8rem 1.3rem;
+			gap: 0.5rem;
+			border-radius: 16px;
+		}
+		.card-emoji { font-size: 2.4rem; }
+		.card-title { font-size: 1.25rem; }
+		.card-desc { font-size: 0.7rem; }
 	}
 </style>

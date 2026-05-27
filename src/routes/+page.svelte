@@ -1,5 +1,47 @@
 <script>
-	// Hub landing — no logic needed, pure navigation
+	import { onMount, onDestroy } from 'svelte';
+	import { browser } from '$app/environment';
+	import { puoRiscuotiBonus, riscuotiBonus, getSecondiAlProssimoRiscuoti } from '$lib/economia.js';
+
+	let puoRiscuotire = $state(false);
+	let secondiRimasti = $state(0);
+	let flashSuccesso = $state(false);
+	let timer = null;
+
+	function pad(n) {
+		return String(n).padStart(2, '0');
+	}
+
+	function formatCountdown(sec) {
+		const h = Math.floor(sec / 3600);
+		const m = Math.floor((sec % 3600) / 60);
+		const s = sec % 60;
+		return `${pad(h)}:${pad(m)}:${pad(s)}`;
+	}
+
+	function aggiorna() {
+		puoRiscuotire = puoRiscuotiBonus();
+		secondiRimasti = getSecondiAlProssimoRiscuoti();
+	}
+
+	function claimBonus() {
+		if (!puoRiscuotire) return;
+		const ok = riscuotiBonus();
+		if (ok) {
+			flashSuccesso = true;
+			setTimeout(() => (flashSuccesso = false), 2000);
+			aggiorna();
+		}
+	}
+
+	onMount(() => {
+		aggiorna();
+		timer = setInterval(aggiorna, 1000);
+	});
+
+	onDestroy(() => {
+		if (timer) clearInterval(timer);
+	});
 </script>
 
 <!-- bg blobs decorativi -->
@@ -17,6 +59,29 @@
 			<span class="title-text">Zoo degli<br />Amici</span>
 		</h1>
 		<p class="subtitle">Scegli dove vuoi andare</p>
+
+		<!-- Bottone Riscuoti -->
+		<div class="riscuoti-wrap">
+			{#if puoRiscuotire}
+				<button
+					class="riscuoti-btn riscuoti-attivo"
+					class:flash={flashSuccesso}
+					onclick={claimBonus}
+				>
+					{#if flashSuccesso}
+						<span>✅ +5W riscossi!</span>
+					{:else}
+						<span>🪙 Riscuoti 5W</span>
+					{/if}
+				</button>
+			{:else}
+				<div class="riscuoti-countdown">
+					<span class="riscuoti-icon">⏳</span>
+					<span class="riscuoti-timer">{formatCountdown(secondiRimasti)}</span>
+					<span class="riscuoti-label">al prossimo bonus</span>
+				</div>
+			{/if}
+		</div>
 	</header>
 
 	<div class="hub-grid">
@@ -178,6 +243,72 @@
 		color: rgba(240, 240, 250, 0.38);
 	}
 
+	/* ── RISCUOTI ── */
+	.riscuoti-wrap {
+		display: flex;
+		justify-content: center;
+		margin-top: 1.4rem;
+	}
+
+	.riscuoti-btn {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.4rem;
+		padding: 0.6rem 1.5rem;
+		border-radius: 999px;
+		border: none;
+		font-family: 'Outfit', sans-serif;
+		font-size: 0.9rem;
+		font-weight: 700;
+		cursor: pointer;
+		transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+	}
+
+	.riscuoti-attivo {
+		background: linear-gradient(135deg, #f59e0b, #fbbf24);
+		color: #1a1200;
+		box-shadow: 0 4px 24px rgba(251, 191, 36, 0.4);
+	}
+
+	.riscuoti-attivo:hover {
+		transform: translateY(-2px) scale(1.04);
+		box-shadow: 0 8px 32px rgba(251, 191, 36, 0.55);
+	}
+
+	.riscuoti-attivo:active {
+		transform: scale(0.97);
+	}
+
+	.riscuoti-attivo.flash {
+		background: linear-gradient(135deg, #22c55e, #4ade80);
+		color: #002200;
+		box-shadow: 0 6px 28px rgba(34, 197, 94, 0.5);
+	}
+
+	.riscuoti-countdown {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.5rem;
+		padding: 0.55rem 1.2rem;
+		border-radius: 999px;
+		border: 1px solid rgba(255, 255, 255, 0.1);
+		background: rgba(255, 255, 255, 0.04);
+		font-family: 'Outfit', sans-serif;
+		font-size: 0.82rem;
+		color: rgba(240, 240, 250, 0.45);
+	}
+
+	.riscuoti-timer {
+		font-weight: 700;
+		font-variant-numeric: tabular-nums;
+		color: rgba(240, 240, 250, 0.7);
+		letter-spacing: 0.05em;
+	}
+
+	.riscuoti-icon {
+		font-size: 0.9rem;
+	}
+
 	/* ── HUB GRID ── */
 	.hub-grid {
 		display: grid;
@@ -290,14 +421,17 @@
 			justify-content: flex-start;
 		}
 		.hub-grid {
-			grid-template-columns: 1fr;
-			gap: 1rem;
+			gap: 0.9rem;
 		}
-		header { padding: 2.5rem 1rem 2rem; }
+		header { padding: 2rem 0.5rem 1.5rem; }
 		h1 { flex-direction: column; gap: 0.3rem; }
 		.title-text { text-align: center; }
-		.hub-card { padding: 1.8rem 1.4rem 1.5rem; }
-		.card-emoji { font-size: 2.6rem; }
-		.card-title { font-size: 1.5rem; }
+		.hub-card {
+			padding: 1.6rem 1rem 1.4rem;
+			gap: 0.5rem;
+		}
+		.card-emoji { font-size: 2.4rem; }
+		.card-title { font-size: 1.3rem; }
+		.card-desc { font-size: 0.72rem; }
 	}
 </style>

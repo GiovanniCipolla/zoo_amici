@@ -2,6 +2,12 @@
  * Portafoglio virtuale — gestione saldo in localStorage.
  */
 
+function dispatchWalletUpdate() {
+	if (typeof window !== 'undefined') {
+		window.dispatchEvent(new CustomEvent('wallet-updated'));
+	}
+}
+
 export function getSaldo() {
 	if (typeof localStorage === 'undefined') return 10;
 	const val = parseFloat(localStorage.getItem('zoo_wallet'));
@@ -17,6 +23,7 @@ export function addSaldo(importo, _motivo) {
 	const attuale = getSaldo();
 	const nuovo = Math.round((attuale + importo) * 100) / 100;
 	localStorage.setItem('zoo_wallet', String(nuovo));
+	dispatchWalletUpdate();
 }
 
 export function spendSaldo(importo) {
@@ -25,6 +32,7 @@ export function spendSaldo(importo) {
 	if (attuale < importo) return false;
 	const nuovo = Math.round((attuale - importo) * 100) / 100;
 	localStorage.setItem('zoo_wallet', String(nuovo));
+	dispatchWalletUpdate();
 	return true;
 }
 
@@ -51,5 +59,30 @@ export function bonusVisitaOggi() {
 
 	localStorage.setItem('zoo_wallet_visita', dataOggi);
 	addSaldo(0.5, 'bonus_visita');
+	return true;
+}
+
+// ── BONUS RISCUOTI (ogni 5 ore) ──────────────────────────────────────────────
+const RISCUOTI_KEY = 'zoo_riscuoti_ts';
+const RISCUOTI_INTERVALLO_MS = 5 * 60 * 60 * 1000; // 5 ore
+const RISCUOTI_IMPORTO = 5;
+
+export function getSecondiAlProssimoRiscuoti() {
+	if (typeof localStorage === 'undefined') return 0;
+	const ts = parseInt(localStorage.getItem(RISCUOTI_KEY) ?? '0', 10);
+	if (!ts) return 0;
+	const rimanente = RISCUOTI_INTERVALLO_MS - (Date.now() - ts);
+	return rimanente > 0 ? Math.ceil(rimanente / 1000) : 0;
+}
+
+export function puoRiscuotiBonus() {
+	return getSecondiAlProssimoRiscuoti() === 0;
+}
+
+export function riscuotiBonus() {
+	if (typeof localStorage === 'undefined') return false;
+	if (!puoRiscuotiBonus()) return false;
+	localStorage.setItem(RISCUOTI_KEY, String(Date.now()));
+	addSaldo(RISCUOTI_IMPORTO, 'riscuoti_bonus');
 	return true;
 }
