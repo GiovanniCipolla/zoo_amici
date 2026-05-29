@@ -54,6 +54,12 @@
 			<p class="card-desc">€0.50 a cartella · sfida i 32 animali al tavolo</p>
 			<span class="card-cta">Gioca →</span>
 		</a>
+		<a href="/bluff" class="game-card card-bluff">
+			<span class="card-emoji">🎲</span>
+			<p class="card-title">Dati del Bluff</p>
+			<p class="card-desc">€1–€50 · Bluffa o sfida</p>
+			<span class="card-cta">Bluffa →</span>
+		</a>
 	</div>
 
 	<div class="compat-section">
@@ -263,6 +269,14 @@
 		box-shadow: 0 12px 40px rgba(109, 40, 217, 0.18);
 	}
 	.card-bingo:hover .card-cta {
+		color: rgba(167, 139, 250, 0.9);
+	}
+	.card-bluff:hover {
+		background: rgba(124, 58, 237, 0.1);
+		border-color: rgba(124, 58, 237, 0.4);
+		box-shadow: 0 12px 40px rgba(124, 58, 237, 0.18);
+	}
+	.card-bluff:hover .card-cta {
 		color: rgba(167, 139, 250, 0.9);
 	}
 
