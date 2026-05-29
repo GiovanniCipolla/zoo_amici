@@ -27,7 +27,7 @@ function calcolaProbabilita(rank) {
 
 export const SLOT_SIMBOLI = membri.map((m, i) => ({
 	emoji: m.emoji,
-	nome: m.nome,
+	nome: nomeDisplay(m),
 	animale: m.animale,
 	colore: m.colore,
 	tipo: `membro_${i}`,

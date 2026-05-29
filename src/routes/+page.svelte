@@ -6,6 +6,13 @@
 	// Giornale — visibile dal 29/05/2026 per 3 giorni
 	const GIORNALE_SCADE = new Date('2026-06-01T23:59:59').getTime();
 	const mostraGiornale = Date.now() < GIORNALE_SCADE;
+	let giornaleAperto = $state(
+		browser ? localStorage.getItem('zoo_giornale_aperto') !== '0' : true
+	);
+	function toggleGiornale() {
+		giornaleAperto = !giornaleAperto;
+		if (browser) localStorage.setItem('zoo_giornale_aperto', giornaleAperto ? '1' : '0');
+	}
 
 	let puoRiscuotire = $state(false);
 	let secondiRimasti = $state(0);
@@ -95,8 +102,12 @@
 			<div class="giornale-data">Venerdì 29 Maggio 2026 · Anno I · N. 1</div>
 			<div class="giornale-titolo-testata">La Gazzetta dello Zoo</div>
 			<div class="giornale-sottotitolo-testata">Il quotidiano degli animalacci · «La verità, tutta la verità, quasi tutta la verità»</div>
+			<button class="giornale-toggle" onclick={toggleGiornale} title={giornaleAperto ? 'Comprimi' : 'Espandi'}>
+				{giornaleAperto ? '▲ Chiudi' : '▼ Leggi'}
+			</button>
 		</div>
 
+		{#if giornaleAperto}
 		<div class="giornale-manchette">
 			<span class="manchette-badge">🔥 EDIZIONE STRAORDINARIA</span>
 			<span class="manchette-sep">·</span>
@@ -143,6 +154,7 @@
 		<div class="giornale-footer">
 			<span>© La Gazzetta dello Zoo · Tutti i diritti riservati · La classifica è non impugnabile</span>
 		</div>
+		{/if}
 	</div>
 	{/if}
 
@@ -411,6 +423,26 @@
 		color: rgba(253,246,227,0.4);
 		font-style: italic;
 		margin-top: 0.25rem;
+	}
+
+	.giornale-toggle {
+		margin-top: 0.5rem;
+		padding: 0.25rem 0.9rem;
+		border-radius: 999px;
+		border: 1px solid rgba(240, 208, 96, 0.35);
+		background: transparent;
+		color: rgba(240, 208, 96, 0.65);
+		font-size: 0.62rem;
+		font-weight: 700;
+		letter-spacing: 0.1em;
+		cursor: pointer;
+		transition: all 0.18s ease;
+		font-family: 'Outfit', sans-serif;
+	}
+	.giornale-toggle:hover {
+		background: rgba(240, 208, 96, 0.1);
+		color: #f0d060;
+		border-color: rgba(240, 208, 96, 0.6);
 	}
 
 	.giornale-manchette {

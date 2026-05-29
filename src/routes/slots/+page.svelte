@@ -222,6 +222,7 @@
 							{#each reel as sym, si}
 								<div class="sym-cell" class:row-win={girato && lineaVince(si)}>
 									<span class="sym-emoji">{sym.emoji}</span>
+									<span class="sym-name">{sym.nome.split(" ")[0]}</span>
 								</div>
 							{/each}
 						</div>
@@ -293,7 +294,7 @@
 			<div class="paytable-tiers">
 				{#each TIER_GROUPS as tier}
 					{#if tier.simboli.length > 0}
-						<div class="tier-row" class:tier-luisa={tier.label === 'LUISA'} style="--tier-color: {tier.colore}">
+						<div class="tier-row" class:tier-luisa={tier.premio === 500} style="--tier-color: {tier.colore}">
 							<div class="tier-left">
 								<span class="tier-icon">{tier.icon}</span>
 								<div class="tier-info">
@@ -358,9 +359,9 @@
 				</div>
 				<div class="win-line-tag">LINEA {vinciteLinee[0].linea + 1}</div>
 				{#if vinciteLinee[0].animale.premio === 500}
-					<div class="win-jackpot win-luisa">🦁 LEGGENDA ASSOLUTA 🦁</div>
-					<div class="win-grido">LUISA REGNA!</div>
-					<div class="win-nome">La Leonessa ha colpito — praticamente impossibile</div>
+					<div class="win-jackpot win-luisa">{vinciteLinee[0].animale.emoji} LEGGENDA ASSOLUTA {vinciteLinee[0].animale.emoji}</div>
+					<div class="win-grido">{vinciteLinee[0].animale.grido}</div>
+					<div class="win-nome">{vinciteLinee[0].animale.nome} — praticamente impossibile</div>
 				{:else}
 					<div class="win-jackpot">✨ JACKPOT! ✨</div>
 					<div class="win-grido">{vinciteLinee[0].animale.grido}</div>
@@ -728,8 +729,10 @@
 	.sym-cell {
 		height: 80px;
 		display: flex;
+		flex-direction: column;
 		align-items: center;
 		justify-content: center;
+		gap: 0.1rem;
 		border-bottom: 1px solid rgba(255, 255, 255, 0.07);
 		transition: background 0.3s, border-color 0.3s;
 		position: relative;
@@ -753,6 +756,26 @@
 	}
 	.spinning .sym-emoji {
 		filter: blur(1.5px);
+	}
+
+	.sym-name {
+		font-size: 0.45rem;
+		font-weight: 700;
+		letter-spacing: 0.05em;
+		color: rgba(255, 255, 255, 0.38);
+		text-transform: uppercase;
+		max-width: 100%;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		padding: 0 4px;
+		line-height: 1;
+	}
+	.spinning .sym-name {
+		opacity: 0;
+	}
+	.sym-cell.row-win .sym-name {
+		color: rgba(255, 215, 0, 0.7);
 	}
 
 	/* ── CONTROLLI ── */
