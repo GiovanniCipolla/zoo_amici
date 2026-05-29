@@ -15,10 +15,6 @@
 	let yayaEasterDone = $state(false);
 	let yayaEasterToast = $state(false);
 
-	function yayaTapFor(m) {
-		return m.nome === 'Yayà' ? handleYayaTap : null;
-	}
-
 	function handleYayaTap() {
 		if (yayaEasterDone) return;
 		yayaTaps++;
@@ -29,6 +25,55 @@
 			yayaEasterToast = true;
 			setTimeout(() => (yayaEasterToast = false), 5000);
 		}
+	}
+
+	// Easter egg segreto: penultimo (idx 30) → terzultimo (idx 29) → ultimo (idx 31)
+	// → popup con codice = somma cifre orario → €100 (sempre riattivabile)
+	const SEQ_SEGRETO = [30, 29, 31];
+	let seqStep = $state(0);
+	let seqTimer = null;
+	let segretoPopup = $state(false);
+	let segretoRiscosso = $state(false);
+
+	function codiceOra() {
+		const now = new Date();
+		const s = String(now.getHours()).padStart(2, '0') + String(now.getMinutes()).padStart(2, '0');
+		return s.split('').reduce((acc, c) => acc + parseInt(c), 0);
+	}
+
+	function orarioFormattato() {
+		const now = new Date();
+		return `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+	}
+
+	function handleSeqTap(idx) {
+		if (seqTimer) clearTimeout(seqTimer);
+		if (idx === SEQ_SEGRETO[seqStep]) {
+			seqStep++;
+			if (seqStep >= SEQ_SEGRETO.length) {
+				seqStep = 0;
+				segretoPopup = true;
+				segretoRiscosso = false;
+			} else {
+				seqTimer = setTimeout(() => { seqStep = 0; }, 8000);
+			}
+		} else {
+			seqStep = idx === SEQ_SEGRETO[0] ? 1 : 0;
+		}
+	}
+
+	function riscuotiSegreto() {
+		if (segretoRiscosso) return;
+		segretoRiscosso = true;
+		addSaldo(100, 'easter_egg_segreto');
+		setTimeout(() => { segretoPopup = false; }, 1800);
+	}
+
+	function emojiTapFor(m) {
+		const idx = membri.indexOf(m);
+		if (m.nome === 'Yayà') return handleYayaTap;
+		if (SEQ_SEGRETO.includes(idx)) return () => handleSeqTap(idx);
+		return null;
 	}
 
 	onMount(() => {
@@ -225,14 +270,14 @@
 				{#if categoriaMembers && categoriaMembers.length >= 3}
 					<div class="mini-podio">
 						<div class="mini-slot mini-second">
-							<CardAnimal membro={categoriaMembers[1]} rank={membri.indexOf(categoriaMembers[1]) + 1} onselect={openModal} onEmojiTap={yayaTapFor(categoriaMembers[1])} />
+							<CardAnimal membro={categoriaMembers[1]} rank={membri.indexOf(categoriaMembers[1]) + 1} onselect={openModal} onEmojiTap={emojiTapFor(categoriaMembers[1])} />
 						</div>
 						<div class="mini-slot mini-first">
 							<div class="mini-crown">👑</div>
-							<CardAnimal membro={categoriaMembers[0]} rank={membri.indexOf(categoriaMembers[0]) + 1} onselect={openModal} onEmojiTap={yayaTapFor(categoriaMembers[0])} />
+							<CardAnimal membro={categoriaMembers[0]} rank={membri.indexOf(categoriaMembers[0]) + 1} onselect={openModal} onEmojiTap={emojiTapFor(categoriaMembers[0])} />
 						</div>
 						<div class="mini-slot mini-third">
-							<CardAnimal membro={categoriaMembers[2]} rank={membri.indexOf(categoriaMembers[2]) + 1} onselect={openModal} onEmojiTap={yayaTapFor(categoriaMembers[2])} />
+							<CardAnimal membro={categoriaMembers[2]} rank={membri.indexOf(categoriaMembers[2]) + 1} onselect={openModal} onEmojiTap={emojiTapFor(categoriaMembers[2])} />
 						</div>
 					</div>
 					{#if categoriaMembers.length > 3}
@@ -244,7 +289,7 @@
 						<div class="grid-base">
 							{#each categoriaMembers.slice(3) as membro}
 								{@const rank = membri.indexOf(membro) + 1}
-								<CardAnimal {membro} {rank} onselect={openModal} onEmojiTap={yayaTapFor(membro)} />
+								<CardAnimal {membro} {rank} onselect={openModal} onEmojiTap={emojiTapFor(membro)} />
 							{/each}
 						</div>
 					{/if}
@@ -252,7 +297,7 @@
 					<div class="grid-base">
 						{#each filtered as membro}
 							{@const rank = membri.indexOf(membro) + 1}
-							<CardAnimal {membro} {rank} onselect={openModal} onEmojiTap={yayaTapFor(membro)} />
+							<CardAnimal {membro} {rank} onselect={openModal} onEmojiTap={emojiTapFor(membro)} />
 						{/each}
 					</div>
 				{/if}
@@ -301,14 +346,14 @@
 			</div>
 			<div class="podio-grid">
 				<div class="podio-slot podio-second">
-					<CardAnimal membro={podio[1]} rank={2} onselect={openModal} onEmojiTap={yayaTapFor(podio[1])} />
+					<CardAnimal membro={podio[1]} rank={2} onselect={openModal} onEmojiTap={emojiTapFor(podio[1])} />
 				</div>
 				<div class="podio-slot podio-first">
 					<div class="crown-wrap" aria-hidden="true">👑</div>
-					<CardAnimal membro={podio[0]} rank={1} onselect={openModal} onEmojiTap={yayaTapFor(podio[0])} />
+					<CardAnimal membro={podio[0]} rank={1} onselect={openModal} onEmojiTap={emojiTapFor(podio[0])} />
 				</div>
 				<div class="podio-slot podio-third">
-					<CardAnimal membro={podio[2]} rank={3} onselect={openModal} onEmojiTap={yayaTapFor(podio[2])} />
+					<CardAnimal membro={podio[2]} rank={3} onselect={openModal} onEmojiTap={emojiTapFor(podio[2])} />
 				</div>
 			</div>
 		</section>
@@ -324,7 +369,7 @@
 		<section class="section grid-section">
 			<div class="cards-grid">
 				{#each resto as membro, i}
-					<CardAnimal {membro} rank={i + 4} onselect={openModal} onEmojiTap={yayaTapFor(membro)} />
+					<CardAnimal {membro} rank={i + 4} onselect={openModal} onEmojiTap={emojiTapFor(membro)} />
 				{/each}
 			</div>
 		</section>
@@ -345,6 +390,30 @@
 <!-- EASTER EGG YAYÀ TOAST -->
 {#if yayaEasterToast}
 	<div class="easter-toast">🦁 Hai scoperto il segreto del Re! +€50.00 nel portafoglio</div>
+{/if}
+
+<!-- EASTER EGG SEGRETO POPUP -->
+{#if segretoPopup}
+	<div class="segreto-overlay" role="dialog" aria-modal="true">
+		<div class="segreto-box">
+			<div class="segreto-glitch">🔐</div>
+			<p class="segreto-label">CODICE SEGRETO</p>
+			<div class="segreto-code">{codiceOra()}</div>
+			<p class="segreto-calc">
+				{orarioFormattato()} → {orarioFormattato().replace(':', '').split('').join(' + ')} = {codiceOra()}
+			</p>
+			{#if !segretoRiscosso}
+				<button class="segreto-btn" onclick={riscuotiSegreto}>
+					Riscuoti €100 →
+				</button>
+			{:else}
+				<p class="segreto-ok">💰 +€100 accreditati</p>
+			{/if}
+			{#if !segretoRiscosso}
+				<button class="segreto-close" onclick={() => { segretoPopup = false; }}>✕</button>
+			{/if}
+		</div>
+	</div>
 {/if}
 
 <!-- MODAL -->
@@ -895,6 +964,124 @@
 		font-size: 0.75rem;
 		padding-top: 2rem;
 	}
+
+	/* ── EASTER EGG SEGRETO ── */
+	.segreto-overlay {
+		position: fixed;
+		inset: 0;
+		z-index: 10000;
+		background: rgba(0, 0, 0, 0.85);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		backdrop-filter: blur(6px);
+		animation: fadeOverlay 0.3s ease both;
+	}
+	@keyframes fadeOverlay {
+		from { opacity: 0; }
+		to   { opacity: 1; }
+	}
+
+	.segreto-box {
+		position: relative;
+		background: rgba(0, 255, 100, 0.04);
+		border: 1px solid rgba(0, 255, 100, 0.25);
+		border-radius: 16px;
+		padding: 2.5rem 2.8rem;
+		text-align: center;
+		max-width: 320px;
+		width: 90%;
+		animation: popIn 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+		box-shadow: 0 0 60px rgba(0, 255, 100, 0.1), inset 0 0 40px rgba(0, 255, 100, 0.03);
+	}
+	@keyframes popIn {
+		from { opacity: 0; transform: scale(0.8) translateY(20px); }
+		to   { opacity: 1; transform: scale(1) translateY(0); }
+	}
+
+	.segreto-glitch {
+		font-size: 3rem;
+		margin-bottom: 0.5rem;
+		animation: glitch 2s steps(1) infinite;
+	}
+	@keyframes glitch {
+		0%, 90%, 100% { transform: translate(0); filter: none; }
+		92%  { transform: translate(-2px, 1px); filter: hue-rotate(90deg); }
+		94%  { transform: translate(2px, -1px); filter: hue-rotate(180deg); }
+		96%  { transform: translate(-1px, 2px); }
+	}
+
+	.segreto-label {
+		font-size: 0.6rem;
+		letter-spacing: 0.3em;
+		text-transform: uppercase;
+		color: rgba(0, 255, 100, 0.5);
+		margin-bottom: 0.8rem;
+		font-family: monospace;
+	}
+
+	.segreto-code {
+		font-size: 5rem;
+		font-weight: 900;
+		color: #00ff64;
+		line-height: 1;
+		text-shadow: 0 0 30px rgba(0, 255, 100, 0.8), 0 0 60px rgba(0, 255, 100, 0.4);
+		font-family: monospace;
+		margin-bottom: 0.5rem;
+		animation: pulse-glow 1.5s ease-in-out infinite;
+	}
+	@keyframes pulse-glow {
+		0%, 100% { text-shadow: 0 0 30px rgba(0, 255, 100, 0.8), 0 0 60px rgba(0, 255, 100, 0.4); }
+		50%       { text-shadow: 0 0 50px rgba(0, 255, 100, 1), 0 0 90px rgba(0, 255, 100, 0.6); }
+	}
+
+	.segreto-calc {
+		font-size: 0.7rem;
+		color: rgba(0, 255, 100, 0.35);
+		font-family: monospace;
+		margin-bottom: 1.5rem;
+		letter-spacing: 0.05em;
+	}
+
+	.segreto-btn {
+		padding: 0.7rem 1.8rem;
+		border-radius: 10px;
+		border: 1px solid rgba(0, 255, 100, 0.4);
+		background: rgba(0, 255, 100, 0.1);
+		color: #00ff64;
+		font-size: 0.9rem;
+		font-weight: 700;
+		cursor: pointer;
+		transition: all 0.2s ease;
+		font-family: 'Outfit', sans-serif;
+		letter-spacing: 0.04em;
+	}
+	.segreto-btn:hover {
+		background: rgba(0, 255, 100, 0.2);
+		box-shadow: 0 0 20px rgba(0, 255, 100, 0.3);
+		transform: translateY(-2px);
+	}
+
+	.segreto-ok {
+		font-size: 1rem;
+		color: #00ff64;
+		font-weight: 700;
+		animation: fade-down 0.4s ease both;
+	}
+
+	.segreto-close {
+		position: absolute;
+		top: 0.7rem;
+		right: 0.8rem;
+		background: transparent;
+		border: none;
+		color: rgba(0, 255, 100, 0.3);
+		font-size: 0.8rem;
+		cursor: pointer;
+		transition: color 0.15s ease;
+		padding: 0.2rem;
+	}
+	.segreto-close:hover { color: rgba(0, 255, 100, 0.7); }
 
 	/* ── RESPONSIVE ── */
 	@media (max-width: 600px) {
