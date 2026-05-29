@@ -1,5 +1,5 @@
 import { supabase } from './supabase.js'
-import { membri } from './membri.js'
+import { membri, nomeDisplay, trovaMembro } from './membri.js'
 import { browser } from '$app/environment'
 
 // ── SESSION ────────────────────────────────────────────────────────────
@@ -66,8 +66,8 @@ export async function creaTorneo() {
 			torneo_id: torneo.id,
 			round: 1,
 			posizione: i + 1,
-			membro1: shuffled[i * 2].nome,
-			membro2: shuffled[i * 2 + 1].nome,
+			membro1: nomeDisplay(shuffled[i * 2]),
+			membro2: nomeDisplay(shuffled[i * 2 + 1]),
 			data_inizio: dataInizio.toISOString(),
 			data_fine: dataFine.toISOString(),
 			stato: i === 0 ? 'attivo' : 'in_attesa'
@@ -127,7 +127,7 @@ export async function haVotato(partitaId, sessionId) {
 
 // ── HELPERS ─────────────────────────────────────────────────────────────
 export function getMembro(nome) {
-	return membri.find((m) => m.nome === nome) || null
+	return trovaMembro(nome)
 }
 
 export function getStatoPartita(partita) {

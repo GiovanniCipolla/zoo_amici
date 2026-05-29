@@ -27,12 +27,14 @@
 		}
 	}
 
-	// Easter egg segreto: penultimo (idx 30) → terzultimo (idx 29) → ultimo (idx 31)
-	// → popup con codice = somma cifre orario → €100 (sempre riattivabile)
-	const SEQ_SEGRETO = [30, 29, 31];
+	// Easter egg segreto: penultimo (idx 32) → terzultimo (idx 31) → ultimo (idx 33)
+	// → popup con input: l'utente inserisce la somma delle cifre dell'orario → €100
+	const SEQ_SEGRETO = [32, 31, 33];
 	let seqStep = $state(0);
 	let seqTimer = null;
 	let segretoPopup = $state(false);
+	let segretoInput = $state('');
+	let segretoErrore = $state(false);
 	let segretoRiscosso = $state(false);
 
 	function codiceOra() {
@@ -53,6 +55,8 @@
 			if (seqStep >= SEQ_SEGRETO.length) {
 				seqStep = 0;
 				segretoPopup = true;
+				segretoInput = '';
+				segretoErrore = false;
 				segretoRiscosso = false;
 			} else {
 				seqTimer = setTimeout(() => { seqStep = 0; }, 8000);
@@ -62,11 +66,18 @@
 		}
 	}
 
-	function riscuotiSegreto() {
-		if (segretoRiscosso) return;
-		segretoRiscosso = true;
-		addSaldo(100, 'easter_egg_segreto');
-		setTimeout(() => { segretoPopup = false; }, 1800);
+	function verificaCodice() {
+		const atteso = codiceOra();
+		if (parseInt(segretoInput) === atteso) {
+			segretoRiscosso = true;
+			segretoErrore = false;
+			addSaldo(100, 'easter_egg_segreto');
+			setTimeout(() => { segretoPopup = false; }, 2000);
+		} else {
+			segretoErrore = true;
+			segretoInput = '';
+			setTimeout(() => { segretoErrore = false; }, 1500);
+		}
 	}
 
 	function emojiTapFor(m) {
@@ -397,14 +408,27 @@
 	<div class="segreto-overlay" role="dialog" aria-modal="true">
 		<div class="segreto-box">
 			<div class="segreto-glitch">🔐</div>
-			<p class="segreto-label">CODICE SEGRETO</p>
-			<div class="segreto-code">{codiceOra()}</div>
-			<p class="segreto-calc">
-				{orarioFormattato()} → {orarioFormattato().replace(':', '').split('').join(' + ')} = {codiceOra()}
+			<p class="segreto-label">AUTENTICAZIONE RICHIESTA</p>
+			<p class="segreto-hint-ora">
+				Sono le <strong>{orarioFormattato()}</strong>
 			</p>
 			{#if !segretoRiscosso}
-				<button class="segreto-btn" onclick={riscuotiSegreto}>
-					Riscuoti €100 →
+				<p class="segreto-istruzione">Inserisci il codice segreto</p>
+				<input
+					class="segreto-input"
+					class:errore={segretoErrore}
+					type="number"
+					inputmode="numeric"
+					placeholder="_ _"
+					bind:value={segretoInput}
+					onkeydown={(e) => e.key === 'Enter' && verificaCodice()}
+					autofocus
+				/>
+				{#if segretoErrore}
+					<p class="segreto-errore">✗ Codice errato</p>
+				{/if}
+				<button class="segreto-btn" onclick={verificaCodice}>
+					Conferma →
 				</button>
 			{:else}
 				<p class="segreto-ok">💰 +€100 accreditati</p>
@@ -1020,27 +1044,65 @@
 		font-family: monospace;
 	}
 
-	.segreto-code {
-		font-size: 5rem;
-		font-weight: 900;
-		color: #00ff64;
-		line-height: 1;
-		text-shadow: 0 0 30px rgba(0, 255, 100, 0.8), 0 0 60px rgba(0, 255, 100, 0.4);
+
+	.segreto-hint-ora {
+		font-size: 0.9rem;
+		color: rgba(0, 255, 100, 0.6);
 		font-family: monospace;
-		margin-bottom: 0.5rem;
-		animation: pulse-glow 1.5s ease-in-out infinite;
+		margin-bottom: 0.3rem;
+		letter-spacing: 0.05em;
 	}
-	@keyframes pulse-glow {
-		0%, 100% { text-shadow: 0 0 30px rgba(0, 255, 100, 0.8), 0 0 60px rgba(0, 255, 100, 0.4); }
-		50%       { text-shadow: 0 0 50px rgba(0, 255, 100, 1), 0 0 90px rgba(0, 255, 100, 0.6); }
+	.segreto-hint-ora strong { color: #00ff64; }
+
+	.segreto-istruzione {
+		font-size: 0.72rem;
+		color: rgba(0, 255, 100, 0.4);
+		font-family: monospace;
+		margin-bottom: 0.8rem;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
 	}
 
-	.segreto-calc {
-		font-size: 0.7rem;
-		color: rgba(0, 255, 100, 0.35);
+	.segreto-input {
+		width: 100px;
+		background: rgba(0, 255, 100, 0.06);
+		border: 1px solid rgba(0, 255, 100, 0.35);
+		border-radius: 10px;
+		padding: 0.6rem 0.8rem;
+		color: #00ff64;
 		font-family: monospace;
-		margin-bottom: 1.5rem;
-		letter-spacing: 0.05em;
+		font-size: 2rem;
+		font-weight: 900;
+		text-align: center;
+		outline: none;
+		transition: border-color 0.2s, box-shadow 0.2s;
+		display: block;
+		margin: 0 auto 0.6rem;
+		-moz-appearance: textfield;
+	}
+	.segreto-input::-webkit-outer-spin-button,
+	.segreto-input::-webkit-inner-spin-button { -webkit-appearance: none; }
+	.segreto-input:focus {
+		border-color: rgba(0, 255, 100, 0.7);
+		box-shadow: 0 0 16px rgba(0, 255, 100, 0.25);
+	}
+	.segreto-input.errore {
+		border-color: rgba(255, 80, 80, 0.7);
+		color: #ff5050;
+		animation: shake 0.3s ease;
+	}
+	@keyframes shake {
+		0%, 100% { transform: translateX(0); }
+		25%       { transform: translateX(-6px); }
+		75%       { transform: translateX(6px); }
+	}
+
+	.segreto-errore {
+		font-size: 0.72rem;
+		color: #ff5050;
+		font-family: monospace;
+		margin-bottom: 0.5rem;
+		animation: fade-down 0.2s ease both;
 	}
 
 	.segreto-btn {

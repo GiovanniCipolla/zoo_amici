@@ -4,7 +4,7 @@
  * 3 paylines attive: riga top, middle, bottom.
  */
 
-import { membri } from './membri.js';
+import { membri, nomeDisplay } from './membri.js';
 
 export const COSTO_GIRO = 2;
 
@@ -32,14 +32,15 @@ export const SLOT_SIMBOLI = membri.map((m, i) => ({
 	colore: m.colore,
 	tipo: `membro_${i}`,
 	rank: i + 1,
-	grido: `${m.nome.toUpperCase()}!`,
+	grido: `${nomeDisplay(m).toUpperCase()}!`,
 	premio: calcolaPremio(i + 1),
 	prob: calcolaProbabilita(i + 1)
 }));
 
-/** Tier groups per la tabella premi */
+/** Tier groups per la tabella premi — rank 1 è sempre il top tier */
+const _rank1 = SLOT_SIMBOLI[0];
 export const TIER_GROUPS = [
-	{ label: 'LUISA', premio: 500, colore: '#d4a020', icon: '🦁', prob: 'Leggenda' },
+	{ label: _rank1.nome.toUpperCase(), premio: 500, colore: _rank1.colore, icon: _rank1.emoji, prob: 'Leggenda' },
 	{ label: 'LEGGENDARIO', premio: 100, colore: '#ffd700', icon: '🏆', prob: 'Ultra Rara' },
 	{ label: 'EPICO', premio: 50, colore: '#c084fc', icon: '✨', prob: 'Molto Rara' },
 	{ label: 'RARO', premio: 10, colore: '#60a5fa', icon: '⭐', prob: 'Rara' },

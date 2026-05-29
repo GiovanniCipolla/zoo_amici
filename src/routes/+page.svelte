@@ -3,6 +3,10 @@
 	import { browser } from '$app/environment';
 	import { puoRiscuotiBonus, riscuotiBonus, getSecondiAlProssimoRiscuoti } from '$lib/economia.js';
 
+	// Giornale — visibile dal 29/05/2026 per 3 giorni
+	const GIORNALE_SCADE = new Date('2026-06-01T23:59:59').getTime();
+	const mostraGiornale = Date.now() < GIORNALE_SCADE;
+
 	let puoRiscuotire = $state(false);
 	let secondiRimasti = $state(0);
 	let flashSuccesso = $state(false);
@@ -83,6 +87,64 @@
 			{/if}
 		</div>
 	</header>
+
+	<!-- ── GIORNALE ── -->
+	{#if mostraGiornale}
+	<div class="giornale">
+		<div class="giornale-testata">
+			<div class="giornale-data">Venerdì 29 Maggio 2026 · Anno I · N. 1</div>
+			<div class="giornale-titolo-testata">La Gazzetta dello Zoo</div>
+			<div class="giornale-sottotitolo-testata">Il quotidiano degli animalacci · «La verità, tutta la verità, quasi tutta la verità»</div>
+		</div>
+
+		<div class="giornale-manchette">
+			<span class="manchette-badge">🔥 EDIZIONE STRAORDINARIA</span>
+			<span class="manchette-sep">·</span>
+			<span>CLASSIFICA RIVOLUZIONATA · DUE NEW ENTRY · IL TORNEO INFIAMMA LO ZOO</span>
+		</div>
+
+		<div class="giornale-headline">
+			YAYÀ SFONDA IL PODIO, NICOLA PRECIPITA ALL'INFERNO
+		</div>
+		<div class="giornale-occhiello">
+			Il Leone scalza Peppe dal terzo gradino. La Cimice di Di Menna stupisce tutti. Due nuovi arrivati scuotono le fondamenta dello zoo.
+		</div>
+
+		<div class="giornale-columns">
+			<div class="giornale-col">
+				<h3 class="col-title">📈 I GRANDI SALTI</h3>
+				<p>È stata una settimana di terremoti. <strong>Yayà</strong>, il Leone dal portamento regale, compie il balzo più atteso: dal settimo al terzo posto, conquistando il podio con la naturalezza di chi sa di meritarlo da sempre. "Re indiscusso", recita la sua scheda. Finalmente la classifica si adegua.</p>
+				<p><strong>Fetente</strong> incalza subito dietro, stabile al quarto: il Cavallo che corre quando vuole si è evidentemente deciso a volerlo. <strong>Di Menna</strong> è la vera sorpresa: la Cimice passa dal 14° all'8° posto in un sol colpo. Non invitata, ma sempre presente — e ora anche temuta.</p>
+				<p><strong>Angelone</strong> il Delfino balza dal 19° al 10°, <strong>Geremia</strong> il Canguro dal 27° al 19°. E il clamoroso caso <strong>Giancarlo</strong>: il Pavone, che era ultimo, si ritrova al 21° posto. Ha aperto la coda, evidentemente, nel posto giusto.</p>
+
+				<h3 class="col-title" style="margin-top:1rem">📉 LE CADUTE ILLUSTRI</h3>
+				<p>Ma la classifica dà e la classifica toglie. <strong>Peppe</strong> la Pecora precipita dal podio al 9° posto. Il "Beeeeh" si è trasformato in un bel "Baah" di delusione. <strong>Alessia</strong> la Varana scivola dal 6° al 13°, <strong>Concetta</strong> lo Squalo dal 12° al 23°.</p>
+				<p>Il caso più clamoroso, però, è <strong>Nicola</strong>: l'Ululatore Professionista crolla dall'11° al 33° posto. Ventidué posizioni in caduta libera. Fonti vicine al lupo parlano di «distrazione stagionale». Rimane da capire di quale stagione.</p>
+			</div>
+
+			<div class="giornale-col">
+				<h3 class="col-title">🆕 I NUOVI ARRIVATI</h3>
+				<p>Lo zoo accoglie due new entry che promettono di fare rumore. <strong>Matteo il Pipistrello</strong> 🦇 entra direttamente al 12° posto: vola di notte, dorme di giorno, e non si scusa con nessuno. Una presenza silenziosa ma inquietante.</p>
+				<p>Al 14° posto debutta <strong>Chiara la Coyote</strong> 🦊, più furba di quanto sembri — e lo sa benissimo. Con l'arrivo di una seconda Chiara nello zoo, la redazione precisa: la veterana dello Struzzo è ora ufficialmente riconoscibile dalla propria disambiguazione anagrafica. Nessuna confusione sarà tollerata.</p>
+
+				<div class="giornale-box-torneo">
+					<h3 class="col-title">⚔️ SPECIALE TORNEO</h3>
+					<p><em>La partita più sottovalutata del turno?</em> <strong>Nunzia vs Vincenzina</strong>. Cavalla contro Antilope: pochi si aspettavano qualcosa di memorabile, e invece la sfida ha regalato un match tecnicamente sopraffino, tiratissimo, con picchi di visualizzazioni inaspettati. La Cavalla ha prevalso, ma l'Antilope ha lasciato il segno.</p>
+					<p>Poi ci sono i dominatori: <strong>Yayà</strong> ha demolito il suo avversario con quella che le cronache definiscono "supremazia devastante". Stesso copione per <strong>Fetente</strong> e <strong>Marcò</strong> la Cozza, che ha sorpreso tutti con una solidità degna di un mollusco di rango. <strong>Di Menna</strong> — a sorpresa, ma poi neanche tanto — si è rivelata una forza della natura.</p>
+					<p>Note di merito per <strong>Pompoff</strong> lo Scoiattolo e <strong>Anthony</strong> la Gazza Ladra: consapevoli della propria forza, hanno affrontato rispettivamente il Pavone Giancarlo e il Delfino Angelone in match brutali, al limite delle proprie possibilità. Hanno vinto, ma ci hanno lasciato le piume — e qualche noce.</p>
+					<p>La <strong>Leonessa Luisa</strong>, regina indiscussa, ha semplicemente annientato Geremia il Canguro. Navigato avversario, certo. Ma la differenza di classe era siderale.</p>
+					<p><strong>Prossimi incontri:</strong> Tutti attendono <strong>Bea vs Senza Nome</strong> (l'Ornitorinco). La Leonessa entrerà in campo con l'appetito di chi non ha ancora mangiato abbastanza. Il glitch della creazione divina verrà sbranato, è solo questione di tempo e di minuti.</p>
+					<p>Più aperto il confronto tra <strong>Nicola</strong> il Lupo — che sembra in vacanza permanente, con tutto quello che comporta — e <strong>Jacopo</strong> il Grillo, che ci metterà tutto e anche di più. Cri cri cri, ma con determinazione.</p>
+					<p>E poi c'è <strong>il Derby dei Lupetti</strong>: <strong>Nico Nico</strong> contro <strong>Tevez</strong>. Lupo in miniatura contro lupo in miniatura. Una sfida di famiglia, di orgoglio, di territorialità del divano. Lo zoo intero trattiene il fiato.</p>
+				</div>
+			</div>
+		</div>
+
+		<div class="giornale-footer">
+			<span>© La Gazzetta dello Zoo · Tutti i diritti riservati · La classifica è non impugnabile</span>
+		</div>
+	</div>
+	{/if}
 
 	<div class="hub-grid">
 		<!-- Classifica -->
@@ -307,6 +369,152 @@
 
 	.riscuoti-icon {
 		font-size: 0.9rem;
+	}
+
+	/* ── GIORNALE ── */
+	.giornale {
+		background: #fdf6e3;
+		border: 2px solid #c8a84b;
+		border-radius: 4px;
+		padding: 0;
+		margin-bottom: 2rem;
+		color: #1a1008;
+		font-family: 'Georgia', 'Times New Roman', serif;
+		box-shadow: 0 4px 24px rgba(0,0,0,0.4), inset 0 0 0 4px rgba(200,168,75,0.15);
+		animation: fade-down 0.65s ease 0.05s both;
+		overflow: hidden;
+	}
+
+	.giornale-testata {
+		background: #1a1008;
+		padding: 0.9rem 1.2rem 0.8rem;
+		text-align: center;
+		border-bottom: 3px double #c8a84b;
+	}
+	.giornale-data {
+		font-size: 0.6rem;
+		letter-spacing: 0.18em;
+		color: rgba(253,246,227,0.5);
+		text-transform: uppercase;
+		margin-bottom: 0.3rem;
+	}
+	.giornale-titolo-testata {
+		font-family: 'Bebas Neue', serif;
+		font-size: clamp(1.8rem, 5vw, 3.2rem);
+		letter-spacing: 0.06em;
+		color: #f0d060;
+		line-height: 1;
+		text-shadow: 0 2px 8px rgba(240,208,96,0.3);
+	}
+	.giornale-sottotitolo-testata {
+		font-size: 0.62rem;
+		color: rgba(253,246,227,0.4);
+		font-style: italic;
+		margin-top: 0.25rem;
+	}
+
+	.giornale-manchette {
+		background: #c8a84b;
+		color: #1a1008;
+		font-size: 0.62rem;
+		font-weight: 700;
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+		padding: 0.3rem 1rem;
+		text-align: center;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0.5rem;
+		flex-wrap: wrap;
+	}
+	.manchette-badge {
+		background: #1a1008;
+		color: #f0d060;
+		padding: 0.1rem 0.5rem;
+		border-radius: 2px;
+	}
+	.manchette-sep { opacity: 0.5; }
+
+	.giornale-headline {
+		font-family: 'Bebas Neue', serif;
+		font-size: clamp(1.4rem, 4vw, 2.2rem);
+		letter-spacing: 0.04em;
+		color: #1a1008;
+		text-align: center;
+		padding: 1rem 1.2rem 0.3rem;
+		line-height: 1.15;
+		border-bottom: 1px solid #c8a84b;
+	}
+
+	.giornale-occhiello {
+		font-size: 0.82rem;
+		color: #3a2808;
+		text-align: center;
+		padding: 0.5rem 1.4rem 0.8rem;
+		font-style: italic;
+		border-bottom: 3px double #c8a84b;
+		line-height: 1.55;
+	}
+
+	.giornale-columns {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 0;
+		padding: 0;
+	}
+
+	.giornale-col {
+		padding: 1rem 1.1rem;
+		font-size: 0.78rem;
+		line-height: 1.65;
+		color: #2a1a08;
+	}
+	.giornale-col:first-child {
+		border-right: 1px solid #c8a84b;
+	}
+	.giornale-col p {
+		margin-bottom: 0.6rem;
+		text-align: justify;
+	}
+	.giornale-col strong { color: #1a1008; font-weight: 700; }
+
+	.col-title {
+		font-family: 'Bebas Neue', serif;
+		font-size: 0.85rem;
+		letter-spacing: 0.1em;
+		color: #1a1008;
+		border-bottom: 1px solid #c8a84b;
+		padding-bottom: 0.25rem;
+		margin-bottom: 0.6rem;
+	}
+
+	.giornale-box-torneo {
+		background: rgba(200,168,75,0.1);
+		border: 1px solid #c8a84b;
+		border-radius: 3px;
+		padding: 0.7rem 0.8rem;
+		margin-top: 0.5rem;
+	}
+	.giornale-box-torneo .col-title { margin-top: 0; }
+	.giornale-box-torneo p em { color: #7a4a08; }
+
+	.giornale-footer {
+		background: #1a1008;
+		color: rgba(253,246,227,0.35);
+		font-size: 0.58rem;
+		text-align: center;
+		padding: 0.4rem 1rem;
+		letter-spacing: 0.1em;
+		border-top: 1px solid #c8a84b;
+	}
+
+	@media (max-width: 600px) {
+		.giornale-columns { grid-template-columns: 1fr; }
+		.giornale-col:first-child { border-right: none; border-bottom: 1px solid #c8a84b; }
+		.giornale-col { font-size: 0.74rem; padding: 0.8rem; }
+		.giornale-headline { font-size: 1.3rem; padding: 0.8rem 0.8rem 0.25rem; }
+		.giornale-occhiello { font-size: 0.75rem; padding: 0.4rem 0.8rem 0.6rem; }
 	}
 
 	/* ── HUB GRID ── */

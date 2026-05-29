@@ -1,7 +1,7 @@
 /**
  * Classifica ufficiale degli animalacci.
  * L'ordine dell'array è l'ordine in classifica (rank 1 = primo).
- * disambig: per animali uguali, mostra solo l'iniziale del nome a fianco.
+ * disambig: usato per distinguere omonimi (stesso nome O stesso animale).
  */
 export const membri = [
 	{
@@ -23,11 +23,19 @@ export const membri = [
 		categoria: 'Felini'
 	},
 	{
-		nome: 'Peppe',
-		animale: 'Pecora',
-		emoji: '🐑',
-		colore: '#b0b8c8',
-		tagline: 'Beeeeh.',
+		nome: 'Yayà',
+		animale: 'Leone',
+		emoji: '🦁',
+		colore: '#e8b84b',
+		tagline: 'Re indiscusso',
+		categoria: 'Felini'
+	},
+	{
+		nome: 'Fetente',
+		animale: 'Cavallo',
+		emoji: '🐴',
+		colore: '#b8860b',
+		tagline: 'Veloce come il vento... di tanto in tanto',
 		categoria: 'Erbivori'
 	},
 	{
@@ -47,37 +55,36 @@ export const membri = [
 		categoria: 'Erbivori'
 	},
 	{
-		nome: 'Alessia',
-		animale: 'Varana',
-		emoji: '🦎',
-		colore: '#4aae6a',
-		tagline: 'Rettile di lusso (edizione limitata)',
-		disambig: 'Ale.',
-		categoria: 'Rettili'
-	},
-	{
-		nome: 'Yayà',
-		animale: 'Leone',
-		emoji: '🦁',
-		colore: '#e8b84b',
-		tagline: 'Re indiscusso del divano',
-		categoria: 'Felini'
-	},
-	{
-		nome: 'Fetente',
-		animale: 'Cavallo',
-		emoji: '🐴',
-		colore: '#b8860b',
-		tagline: 'Veloce come il vento... di tanto in tanto',
-		categoria: 'Erbivori'
-	},
-	{
 		nome: 'Anthony',
 		animale: 'Gazza Ladra',
 		emoji: '🐦‍⬛',
 		colore: '#9a9aaa',
 		tagline: 'Occhio ai vostri oggetti preziosi',
 		categoria: 'Uccelli'
+	},
+	{
+		nome: 'Di Menna',
+		animale: 'Cimice',
+		emoji: '🪲',
+		colore: '#5a8c1a',
+		tagline: 'Non invitato, ma sempre presente',
+		categoria: 'Insetti'
+	},
+	{
+		nome: 'Peppe',
+		animale: 'Pecora',
+		emoji: '🐑',
+		colore: '#b0b8c8',
+		tagline: 'Beeeeh.',
+		categoria: 'Erbivori'
+	},
+	{
+		nome: 'Angelone',
+		animale: 'Delfino',
+		emoji: '🐬',
+		colore: '#1ab0e8',
+		tagline: 'Il più intelligente del gruppo (parole sue)',
+		categoria: 'Acquatici'
 	},
 	{
 		nome: 'Marcò',
@@ -88,20 +95,30 @@ export const membri = [
 		categoria: 'Acquatici'
 	},
 	{
-		nome: 'Nicola',
-		animale: 'Lupo',
-		emoji: '🐺',
-		colore: '#8b9ab0',
-		tagline: 'Ululatore professionista',
-		categoria: 'Canidi'
+		nome: 'Matteo',
+		animale: 'Pipistrello',
+		emoji: '🦇',
+		colore: '#6b21a8',
+		tagline: 'Vola di notte, dorme di giorno, e non si scusa',
+		categoria: 'Esotici'
 	},
 	{
-		nome: 'Concetta',
-		animale: 'Squalo',
-		emoji: '🦈',
-		colore: '#1840b0',
-		tagline: 'Non fare mosse sbagliate',
-		categoria: 'Acquatici'
+		nome: 'Alessia',
+		animale: 'Varana',
+		emoji: '🦎',
+		colore: '#4aae6a',
+		tagline: 'Rettile di lusso (edizione limitata)',
+		disambig: 'Ale.',
+		categoria: 'Rettili'
+	},
+	{
+		nome: 'Chiara',
+		animale: 'Coyote',
+		emoji: '🦊',
+		colore: '#d97706',
+		tagline: 'Più furba di quanto sembri, e lo sa benissimo',
+		disambig: 'Coyote',
+		categoria: 'Canidi'
 	},
 	{
 		nome: 'Nico Nico',
@@ -113,53 +130,12 @@ export const membri = [
 		categoria: 'Canidi'
 	},
 	{
-		nome: 'Di Menna',
-		animale: 'Cimice',
-		emoji: '🪲',
-		colore: '#5a8c1a',
-		tagline: 'Non invitato, ma sempre presente',
-		categoria: 'Insetti'
-	},
-	{
 		nome: 'Martina',
 		animale: 'Puma',
 		emoji: '🐆',
 		colore: '#c87830',
 		tagline: 'Agile, feroce, lo sa benissimo',
 		categoria: 'Felini'
-	},
-	{
-		nome: 'Chiara',
-		animale: 'Struzzo',
-		emoji: '🦤',
-		colore: '#c0b8a0',
-		tagline: 'Esperta in tecniche di negazione della realtà',
-		categoria: 'Uccelli'
-	},
-	{
-		nome: 'Tevez',
-		animale: 'Lupetto',
-		emoji: '🐺',
-		colore: '#a0aec0',
-		tagline: 'Lupo in miniatura, ma non fatelo sapere',
-		disambig: 'T.',
-		categoria: 'Canidi'
-	},
-	{
-		nome: 'Aquilino',
-		animale: 'Orso',
-		emoji: '🐻',
-		colore: '#8a5020',
-		tagline: 'In letargo 9 mesi su 12',
-		categoria: 'Esotici'
-	},
-	{
-		nome: 'Angelone',
-		animale: 'Delfino',
-		emoji: '🐬',
-		colore: '#1ab0e8',
-		tagline: 'Il più intelligente del gruppo (parole sue)',
-		categoria: 'Acquatici'
 	},
 	{
 		nome: 'Alice',
@@ -178,12 +154,63 @@ export const membri = [
 		categoria: 'Erbivori'
 	},
 	{
-		nome: 'Micaela',
-		animale: 'Lince',
-		emoji: '🐱',
-		colore: '#a06828',
-		tagline: 'Ti vede. Anche adesso. Anche al buio',
-		categoria: 'Felini'
+		nome: 'Geremia',
+		animale: 'Canguro',
+		emoji: '🦘',
+		colore: '#d4820a',
+		tagline: 'Porta tutto nel marsupio, tranne le responsabilità',
+		categoria: 'Esotici'
+	},
+	{
+		nome: 'Chiara',
+		animale: 'Struzzo',
+		emoji: '🦤',
+		colore: '#c0b8a0',
+		tagline: 'Esperta in tecniche di negazione della realtà',
+		disambig: 'Struzzo',
+		categoria: 'Uccelli'
+	},
+	{
+		nome: 'Giancarlo',
+		animale: 'Pavone',
+		emoji: '🦚',
+		colore: '#1ab87a',
+		tagline: 'Apre la coda anche al supermercato',
+		categoria: 'Uccelli'
+	},
+	{
+		nome: 'Aquilino',
+		animale: 'Orso',
+		emoji: '🐻',
+		colore: '#8a5020',
+		tagline: 'In letargo 9 mesi su 12',
+		categoria: 'Esotici'
+	},
+	{
+		nome: 'Concetta',
+		animale: 'Squalo',
+		emoji: '🦈',
+		colore: '#1840b0',
+		tagline: 'Non fare mosse sbagliate',
+		categoria: 'Acquatici'
+	},
+	{
+		nome: 'Tevez',
+		animale: 'Lupetto',
+		emoji: '🐺',
+		colore: '#a0aec0',
+		tagline: 'Lupo in miniatura, ma non fatelo sapere',
+		disambig: 'T.',
+		categoria: 'Canidi'
+	},
+	{
+		nome: 'Alexia',
+		animale: 'Varana',
+		emoji: '🦎',
+		colore: '#3a9e5a',
+		tagline: 'Rettile di lusso (versione deluxe)',
+		disambig: 'Alx.',
+		categoria: 'Rettili'
 	},
 	{
 		nome: 'Jacopo',
@@ -194,14 +221,6 @@ export const membri = [
 		categoria: 'Insetti'
 	},
 	{
-		nome: 'Pasquale',
-		animale: 'Topo',
-		emoji: '🐭',
-		colore: '#9a9a9a',
-		tagline: 'Silenzioso, furtivo, e sa dove tieni il formaggio',
-		categoria: 'Roditori'
-	},
-	{
 		nome: 'Annalina',
 		animale: 'Rondine',
 		emoji: '🐦',
@@ -210,20 +229,28 @@ export const membri = [
 		categoria: 'Uccelli'
 	},
 	{
+		nome: 'Micaela',
+		animale: 'Lince',
+		emoji: '🐱',
+		colore: '#a06828',
+		tagline: 'Ti vede. Anche adesso. Anche al buio',
+		categoria: 'Felini'
+	},
+	{
+		nome: 'Pasquale',
+		animale: 'Topo',
+		emoji: '🐭',
+		colore: '#9a9a9a',
+		tagline: 'Silenzioso, furtivo, e sa dove tieni il formaggio',
+		categoria: 'Roditori'
+	},
+	{
 		nome: 'Claudia',
 		animale: 'Giraffa',
 		emoji: '🦒',
 		colore: '#e89a30',
 		tagline: 'Vede lontano. I problemi li ignora',
 		categoria: 'Erbivori'
-	},
-	{
-		nome: 'Geremia',
-		animale: 'Canguro',
-		emoji: '🦘',
-		colore: '#d4820a',
-		tagline: 'Porta tutto nel marsupio, tranne le responsabilità',
-		categoria: 'Esotici'
 	},
 	{
 		nome: 'Pietro',
@@ -242,13 +269,12 @@ export const membri = [
 		categoria: 'Esotici'
 	},
 	{
-		nome: 'Alexia',
-		animale: 'Varana',
-		emoji: '🦎',
-		colore: '#3a9e5a',
-		tagline: 'Rettile di lusso (versione deluxe)',
-		disambig: 'Alx.',
-		categoria: 'Rettili'
+		nome: 'Nicola',
+		animale: 'Lupo',
+		emoji: '🐺',
+		colore: '#8b9ab0',
+		tagline: 'Ululatore professionista',
+		categoria: 'Canidi'
 	},
 	{
 		nome: 'Downtonio',
@@ -257,13 +283,29 @@ export const membri = [
 		colore: '#4a9e6a',
 		tagline: 'Rettile di classe superiore',
 		categoria: 'Rettili'
-	},
-	{
-		nome: 'Giancarlo',
-		animale: 'Pavone',
-		emoji: '🦚',
-		colore: '#1ab87a',
-		tagline: 'Apre la coda anche al supermercato',
-		categoria: 'Uccelli'
 	}
 ];
+
+/**
+ * Restituisce il nome visualizzabile di un membro.
+ * Se ha disambig usato per omonimi di NOME, aggiunge "(Disambig)" al nome.
+ * Disambig a singola lettera (es. 'L.', 'B.') sono per omonimi di ANIMALE → non si aggiungono al nome.
+ */
+export function nomeDisplay(m) {
+	// disambig a lettera singola o con punto = serve per l'animale, non per il nome
+	if (!m.disambig || /^[A-Z][a-z]?\.$/.test(m.disambig)) return m.nome;
+	// disambig multi-parola o senza punto = serve per distinguere nomi uguali
+	return `${m.nome} (${m.disambig})`;
+}
+
+/**
+ * Trova un membro per nome, supportando sia il nome semplice che il nomeDisplay.
+ * Usato dal torneo per risolvere ambiguità.
+ */
+export function trovaMembro(nome) {
+	return (
+		membri.find((m) => nomeDisplay(m) === nome) ||
+		membri.find((m) => m.nome === nome) ||
+		null
+	);
+}
