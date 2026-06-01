@@ -388,8 +388,10 @@
 									{@const vm = getMembro(v.votato)}
 									<div class="votante-row" style="--accent: {vm?.colore || '#888'}">
 										<span class="votante-emoji">{vm?.emoji}</span>
-										<span class="votante-nome">{v.nominativo || 'Anonimo'}</span>
-										<span class="votante-scelta">→ {v.votato}</span>
+										<div class="votante-info">
+											<span class="votante-nome">{v.nominativo || 'Anonimo'}</span>
+											<span class="votante-scelta">{vm?.emoji} {v.votato}</span>
+										</div>
 										<span class="votante-ora">{formatOra(v.created_at)}</span>
 									</div>
 								{/each}
@@ -487,7 +489,7 @@
 										{#each dettaglioVoti as v}
 											{@const vm = getMembro(v.votato)}
 											<span class="det-votante" style="--accent: {vm?.colore || '#888'}">
-												{v.nominativo || 'Anonimo'} → {vm?.emoji} · {formatOra(v.created_at)}
+												{v.nominativo || 'Anonimo'} → {vm?.emoji} {v.votato}
 											</span>
 										{/each}
 									</div>
@@ -1078,21 +1080,26 @@
 	}
 	.votante-row {
 		display: grid;
-		grid-template-columns: auto 1fr auto auto;
+		grid-template-columns: auto 1fr auto;
 		align-items: center;
-		gap: 0.6rem;
-		padding: 0.5rem 0.8rem;
+		gap: 0.7rem;
+		padding: 0.55rem 0.9rem;
 		background: rgba(255,255,255,0.03);
 		border-radius: 10px;
 		border-left: 3px solid var(--accent);
-		font-size: 0.82rem;
 	}
-	.votante-emoji { font-size: 1.1rem; }
-	.votante-nome { color: #f0f0fa; font-weight: 600; }
-	.votante-scelta { color: rgba(240,240,250,0.45); font-size: 0.78rem; }
+	.votante-emoji { font-size: 1.4rem; flex-shrink: 0; }
+	.votante-info {
+		display: flex;
+		flex-direction: column;
+		gap: 0.1rem;
+		min-width: 0;
+	}
+	.votante-nome { color: #f0f0fa; font-weight: 600; font-size: 0.82rem; }
+	.votante-scelta { color: var(--accent); font-size: 0.72rem; font-weight: 600; }
 	.votante-ora {
 		color: rgba(240,240,250,0.25);
-		font-size: 0.72rem;
+		font-size: 0.7rem;
 		white-space: nowrap;
 	}
 
@@ -1357,19 +1364,35 @@
 	/* ── RESPONSIVE ── */
 	@media (max-width: 600px) {
 		.page { padding: 0 0.9rem 4rem; }
-		.vs-wrap { grid-template-columns: 1fr auto 1fr; gap: 0.5rem; }
-		.fighter-card { padding: 1.2rem 0.7rem; }
-		.fighter-emoji { font-size: 2.5rem; }
-		.fighter-nome { font-size: 1.2rem; }
-		.vs-text { font-size: 1.8rem; }
-		.barre-wrap { grid-template-columns: 1fr auto 1fr; gap: 0.6rem; padding: 1rem; }
-		.barra-nome { font-size: 0.9rem; }
-		.barra-pct { font-size: 1.2rem; }
-		.cal-row { grid-template-columns: 24px 58px 1fr auto; gap: 0.5rem; padding: 0.65rem 0.7rem; font-size: 0.78rem; }
-		.cal-chevron { display: none; }
-		.cal-stato { display: none; }
+
+		/* Fighter cards */
+		.vs-wrap { grid-template-columns: 1fr auto 1fr; gap: 0.4rem; }
+		.fighter-card { padding: 1rem 0.5rem; border-radius: 16px; }
+		.fighter-emoji { font-size: 2.2rem; }
+		.fighter-nome { font-size: 1rem; }
+		.fighter-animale { font-size: 0.62rem; }
+		.vs-text { font-size: 1.6rem; }
+
+		/* Barre risultati */
+		.barre-wrap { grid-template-columns: 1fr auto 1fr; gap: 0.5rem; padding: 0.9rem; }
+		.barra-nome { font-size: 0.82rem; }
+		.barra-pct { font-size: 1.1rem; }
+		.barra-emoji { font-size: 1.4rem; }
 		.barra-tagline { display: none; }
-		.votante-row { grid-template-columns: auto 1fr auto; }
-		.votante-scelta { display: none; }
+
+		/* Votanti — nessuna override: il layout 3-col funziona già */
+		.votanti-wrap { padding: 0.9rem 0.9rem; }
+
+		/* Calendario */
+		.cal-row {
+			grid-template-columns: 20px 1fr auto auto;
+			gap: 0.4rem;
+			padding: 0.6rem 0.7rem;
+			font-size: 0.76rem;
+		}
+		.cal-data-small { display: none; }
+		.cal-matchup { font-size: 0.74rem; gap: 0.3rem; }
+		.cal-stato { font-size: 0.58rem; padding: 0.15rem 0.35rem; letter-spacing: 0; }
+		.cal-chevron { display: block; font-size: 1rem; }
 	}
 </style>
