@@ -79,9 +79,42 @@ export function puoRiscuotiBonus() {
 	return getSecondiAlProssimoRiscuoti() === 0;
 }
 
-export function riscuotiBonus() {
+/**
+ * Riscuote il bonus da 5W.
+ * Valida server-side tramite fingerprint: blocca lo stesso device
+ * anche se l'utente cancella localStorage o usa modalità privata.
+ * @param {string|null} fingerprint — visitorId da FingerprintJS
+ */
+export async function riscuotiBonus(fingerprint) {
 	if (typeof localStorage === 'undefined') return false;
+	// Check locale veloce: se il timer non è scaduto, blocca subito
 	if (!puoRiscuotiBonus()) return false;
+
+	// Se abbiamo il fingerprint, valida sul server
+	if (fingerprint) {
+		try {
+			const res = await fetch('/api/riscuoti', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ fingerprint })
+			});
+			const data = await res.json();
+
+			if (!data.ok) {
+				// Il server dice che abbiamo già riscosso — sincronizza localStorage
+				if (data.rimanente_ms && data.rimanente_ms > 0) {
+					const fakeTs = Date.now() - RISCUOTI_INTERVALLO_MS + data.rimanente_ms;
+					localStorage.setItem(RISCUOTI_KEY, String(fakeTs));
+				}
+				return false;
+			}
+		} catch {
+			// Se il server non risponde, prosegui con il check locale
+			// (degradazione graceful — non blocca l'utente per problemi di rete)
+		}
+	}
+
+	// Approva il claim
 	localStorage.setItem(RISCUOTI_KEY, String(Date.now()));
 	addSaldo(RISCUOTI_IMPORTO, 'riscuoti_bonus');
 	return true;

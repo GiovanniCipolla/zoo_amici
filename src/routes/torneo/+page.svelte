@@ -4,6 +4,7 @@
 	import { goto } from '$app/navigation';
 	import { addSaldo } from '$lib/economia.js';
 	import { unlock } from '$lib/achievements.js';
+	import { getFingerprint } from '$lib/fingerprint.js';
 	import {
 		getSessionId,
 		getTorneoAttivo,
@@ -66,7 +67,8 @@
 			if (partitaAttiva) {
 				votiAttivi = await getVoti(partitaAttiva.id);
 				const sid = getSessionId();
-				mioVoto = await haVotato(partitaAttiva.id, sid);
+				const fp = await getFingerprint();
+				mioVoto = await haVotato(partitaAttiva.id, sid, fp);
 				fase = mioVoto ? 'risultati' : 'vota';
 			}
 		} catch (e) {
@@ -93,7 +95,21 @@
 		votando = true;
 		try {
 			const sid = getSessionId();
-			await vota(partitaAttiva.id, selezionato, sid, nominativo.trim() || null);
+			const fp = await getFingerprint();
+
+			// Ottieni l'IP reale dal server (Layer 2)
+			let ip = null;
+			try {
+				const res = await fetch('/api/identify', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({ fingerprint: fp })
+				});
+				const d = await res.json();
+				ip = d.ip;
+			} catch {}
+
+			await vota(partitaAttiva.id, selezionato, sid, nominativo.trim() || null, fp, ip);
 			mioVoto = { votato: selezionato, nominativo: nominativo.trim() || null };
 			votiAttivi = await getVoti(partitaAttiva.id);
 			fase = 'risultati';
@@ -111,7 +127,9 @@
 			if (nVoti >= 5) unlock('tifoso');
 		} catch (e) {
 			if (e.message?.includes('duplicate') || e.message?.includes('unique')) {
-				mioVoto = await haVotato(partitaAttiva.id, getSessionId());
+				const sid = getSessionId();
+				const fp = await getFingerprint();
+				mioVoto = await haVotato(partitaAttiva.id, sid, fp);
 				votiAttivi = await getVoti(partitaAttiva.id);
 				fase = 'risultati';
 			} else {

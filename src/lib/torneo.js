@@ -100,14 +100,16 @@ export async function getVoti(partitaId) {
 	return data || []
 }
 
-export async function vota(partitaId, votato, sessionId, nominativo) {
+export async function vota(partitaId, votato, sessionId, nominativo, fingerprint, ip) {
 	const { data, error } = await supabase
 		.from('voti')
 		.insert({
 			partita_id: partitaId,
 			votato,
 			session_id: sessionId,
-			nominativo: nominativo || null
+			nominativo: nominativo || null,
+			fingerprint: fingerprint || null,
+			ip: ip || null
 		})
 		.select()
 		.single()
@@ -115,13 +117,20 @@ export async function vota(partitaId, votato, sessionId, nominativo) {
 	return data
 }
 
-export async function haVotato(partitaId, sessionId) {
-	const { data } = await supabase
+export async function haVotato(partitaId, sessionId, fingerprint) {
+	let query = supabase
 		.from('voti')
 		.select('votato, nominativo')
 		.eq('partita_id', partitaId)
-		.eq('session_id', sessionId)
-		.maybeSingle()
+
+	// Controlla per session_id OPPURE fingerprint — stesso device, sessione diversa
+	if (fingerprint) {
+		query = query.or(`session_id.eq.${sessionId},fingerprint.eq.${fingerprint}`)
+	} else {
+		query = query.eq('session_id', sessionId)
+	}
+
+	const { data } = await query.limit(1).maybeSingle()
 	return data
 }
 

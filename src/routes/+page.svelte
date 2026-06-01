@@ -2,6 +2,7 @@
 	import { onMount, onDestroy } from 'svelte';
 	import { browser } from '$app/environment';
 	import { puoRiscuotiBonus, riscuotiBonus, getSecondiAlProssimoRiscuoti } from '$lib/economia.js';
+	import { getFingerprint } from '$lib/fingerprint.js';
 
 	// Giornale — visibile dal 29/05/2026 per 3 giorni
 	const GIORNALE_SCADE = new Date('2026-06-01T23:59:59').getTime();
@@ -35,9 +36,10 @@
 		secondiRimasti = getSecondiAlProssimoRiscuoti();
 	}
 
-	function claimBonus() {
+	async function claimBonus() {
 		if (!puoRiscuotire) return;
-		const ok = riscuotiBonus();
+		const fp = await getFingerprint();
+		const ok = await riscuotiBonus(fp);
 		if (ok) {
 			flashSuccesso = true;
 			setTimeout(() => (flashSuccesso = false), 2000);

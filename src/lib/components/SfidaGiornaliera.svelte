@@ -1,19 +1,60 @@
 <script>
+	import { onMount } from 'svelte';
 	import { browser } from '$app/environment';
 	import { membri } from '$lib/membri.js';
 	import { getSfidaDati, oggiFormattato } from '$lib/sfide.js';
+	import { getFingerprint } from '$lib/fingerprint.js';
 
 	const { sfida, formato, lato1, lato2, voteKey } = getSfidaDati(membri);
 	const data = oggiFormattato();
+	// Estrae YYYY-MM-DD dalla chiave zoo_sfida_YYYY-MM-DD
+	const dataISO = voteKey.slice('zoo_sfida_'.length);
 
 	// Voto salvato per oggi ('1' | '2' | null)
 	let voto = $state(browser ? localStorage.getItem(voteKey) : null);
 
-	function vota(lato) {
+	async function vota(lato) {
 		if (voto) return;
 		voto = lato;
 		if (browser) localStorage.setItem(voteKey, lato);
+
+		// Registra il voto sul server (fire-and-forget, non blocca la UX)
+		try {
+			const fp = await getFingerprint();
+			if (!fp) return;
+			const res = await fetch('/api/sfida-vote', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ fingerprint: fp, data_voto: dataISO, lato })
+			});
+			const d = await res.json();
+			// Se il server dice che avevamo già votato da altro browser/sessione, sincronizza
+			if (!d.ok && d.lato_precedente && d.lato_precedente !== lato) {
+				voto = d.lato_precedente;
+				if (browser) localStorage.setItem(voteKey, d.lato_precedente);
+			}
+		} catch {
+			// Silenzioso — il voto locale è già salvato
+		}
 	}
+
+	onMount(async () => {
+		// Se localStorage non ha il voto, controlla il server
+		// (copre il caso: localStorage cancellato o cambio browser sullo stesso device)
+		if (voto) return;
+		try {
+			const fp = await getFingerprint();
+			if (!fp) return;
+			const res = await fetch(`/api/sfida-vote?fingerprint=${fp}&date=${dataISO}`);
+			const d = await res.json();
+			if (d.lato) {
+				voto = d.lato;
+				if (browser) localStorage.setItem(voteKey, d.lato);
+			}
+		} catch {
+			// Silenzioso
+		}
+	});
 
 	const animalLabel = (m) => (m.disambig ? `${m.animale} ${m.disambig}` : m.animale);
 </script>
