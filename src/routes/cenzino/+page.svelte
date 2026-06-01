@@ -6,7 +6,8 @@
 	import { getSaldo, spendSaldo, addSaldo } from '$lib/economia.js';
 	import { unlock, checkEconomyAchievements } from '$lib/achievements.js';
 
-	const PUNTATA = 1;
+	const PRESET_PUNTATA = [0.5, 1, 2, 5, 10];
+	let puntata = $state(1);
 	const STORIA_MAX = 10;
 
 	// ── Stato ─────────────────────────────────────────────────────────
@@ -22,7 +23,7 @@
 	let beerIdCounter = 0;
 	let maxMolt = $state(1.0); // massimo mult raggiunto nel round corrente
 
-	const saldoInsuff = $derived(saldo < PUNTATA);
+	const saldoInsuff = $derived(saldo < puntata || puntata < 0.5);
 
 	const statoAnimale = $derived(
 		fase !== 'gioco'
@@ -46,7 +47,7 @@
 					: '#e2e8f0'
 	);
 
-	const guadagnoNetto = $derived(moltiplicatore - PUNTATA);
+	const guadagnoNetto = $derived(puntata * (moltiplicatore - 1));
 
 	let tickerId = null;
 	let beerTick = 0;
@@ -90,7 +91,7 @@
 	function inizia() {
 		if (saldoInsuff || fase === 'gioco') return;
 
-		spendSaldo(PUNTATA);
+		spendSaldo(puntata);
 		saldo = getSaldo();
 
 		animale = membri[Math.floor(Math.random() * membri.length)];
@@ -123,7 +124,7 @@
 		clearInterval(tickerId);
 		tickerId = null;
 
-		const vincita = moltiplicatore;
+		const vincita = Math.round(puntata * moltiplicatore * 100) / 100;
 		addSaldo(vincita, 'cenzino_vincita');
 		saldo = getSaldo();
 		beers = [];
@@ -207,7 +208,7 @@
 	<div class="wallet-bar">
 		<span class="wallet-icon">💰</span>
 		<span class="wallet-saldo">€{saldo.toFixed(2)}</span>
-		<span class="wallet-costo">Puntata: €{PUNTATA}/partita</span>
+		<span class="wallet-costo">Puntata: €{puntata.toFixed(puntata % 1 === 0 ? 0 : 1)}/partita</span>
 	</div>
 
 	<!-- ── STORIA CRASH ── -->
@@ -250,7 +251,7 @@
 							<div class="info-item">
 								<span>🍺</span>
 								<div>
-									<strong>Punta €1</strong><br />
+									<strong>Scegli la tua puntata</strong><br />
 									<small>Un animale dello Zoo inizia a bere birra</small>
 								</div>
 							</div>
@@ -352,6 +353,22 @@
 
 				<!-- Controlli -->
 				<div class="controls">
+					<!-- ── Selezione puntata ── -->
+					{#if fase === 'attesa' || fase === 'ritirato' || fase === 'svenuto'}
+					<div class="puntata-selector">
+						<span class="puntata-sel-label">🎲 Puntata</span>
+						<div class="puntata-chips">
+							{#each PRESET_PUNTATA as p}
+								<button
+									class="puntata-chip"
+									class:active={puntata === p}
+									onclick={() => puntata = Math.min(saldo, p)}
+									disabled={p > saldo}
+								>{p % 1 === 0 ? `€${p}` : `€${p.toFixed(1)}`}</button>
+							{/each}
+						</div>
+					</div>
+					{/if}
 					{#if fase === 'attesa'}
 						<button
 							class="start-btn"
@@ -359,7 +376,7 @@
 							onclick={inizia}
 							disabled={saldoInsuff}
 						>
-							{saldoInsuff ? '💸 Saldo insufficiente' : '🍺 Punta €' + PUNTATA + ' e Inizia!'}
+							{saldoInsuff ? '💸 Saldo insufficiente' : `🍺 Punta €${puntata.toFixed(puntata % 1 === 0 ? 0 : 1)} e Inizia!`}
 						</button>
 					{:else if fase === 'gioco'}
 						<button class="ritirati-btn" style="--mc: {multColore}" onclick={ritirati}>
@@ -369,14 +386,14 @@
 						<div class="esito-box esito-vinto">
 							<div class="esito-icon">✅</div>
 							<div class="esito-title">Ritirato a {moltiplicatore.toFixed(2)}x</div>
-							<div class="esito-premio">+€{(moltiplicatore - PUNTATA).toFixed(2)} guadagnati!</div>
+							<div class="esito-premio">+€{(puntata * moltiplicatore - puntata).toFixed(2)} guadagnati!</div>
 						</div>
 						<button class="play-again-btn" onclick={nuovaPartita}>Gioca ancora →</button>
 					{:else if fase === 'svenuto'}
 						<div class="esito-box esito-perso">
 							<div class="esito-icon">💀</div>
 							<div class="esito-title">Svenuto a {crashPoint.toFixed(2)}x</div>
-							<div class="esito-premio">-€{PUNTATA.toFixed(2)} persi</div>
+							<div class="esito-premio">-€{puntata.toFixed(2)} persi</div>
 						</div>
 						<button class="play-again-btn" onclick={nuovaPartita}>Riprova →</button>
 					{/if}
@@ -1108,6 +1125,53 @@
 		from { opacity: 0; transform: translateY(4px); }
 		to { opacity: 1; transform: translateY(0); }
 	}
+
+	/* ── Puntata selector ── */
+	.puntata-selector {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+		padding: 0.8rem 1rem;
+		background: rgba(0,0,0,0.2);
+		border: 1px solid rgba(245,158,11,0.2);
+		border-radius: 14px;
+		margin-bottom: 0.5rem;
+	}
+	.puntata-sel-label {
+		font-size: 0.68rem;
+		font-weight: 700;
+		letter-spacing: 0.12em;
+		color: rgba(245,158,11,0.65);
+		text-transform: uppercase;
+	}
+	.puntata-chips {
+		display: flex;
+		gap: 0.4rem;
+		flex-wrap: wrap;
+	}
+	.puntata-chip {
+		padding: 0.3rem 0.7rem;
+		background: rgba(245,158,11,0.07);
+		border: 1px solid rgba(245,158,11,0.25);
+		border-radius: 999px;
+		color: rgba(245,158,11,0.75);
+		font-size: 0.82rem;
+		font-weight: 700;
+		cursor: pointer;
+		transition: all 0.15s;
+	}
+	.puntata-chip:hover:not(:disabled) {
+		background: rgba(245,158,11,0.15);
+		border-color: rgba(245,158,11,0.55);
+		color: #f59e0b;
+	}
+	.puntata-chip.active {
+		background: rgba(245,158,11,0.2);
+		border-color: #f59e0b;
+		color: #f59e0b;
+		box-shadow: 0 0 10px rgba(245,158,11,0.2);
+	}
+	.puntata-chip:disabled { opacity: 0.3; cursor: not-allowed; }
 
 	@media (max-width: 480px) {
 		.title-text { font-size: 1.7rem; }

@@ -2,7 +2,7 @@
 	import { onMount, onDestroy } from 'svelte';
 	import { browser } from '$app/environment';
 	import { goto } from '$app/navigation';
-	import { SLOT_SIMBOLI, WIN_PARTICLES, COSTO_GIRO, TIER_GROUPS, gira } from '$lib/slots.js';
+	import { SLOT_SIMBOLI, WIN_PARTICLES, BASE_BET, TIER_GROUPS, gira } from '$lib/slots.js';
 	import { getSaldo, spendSaldo, addSaldo } from '$lib/economia.js';
 	import { logSlotGiro } from '$lib/logger.js';
 	import { unlock, checkEconomyAchievements } from '$lib/achievements.js';
@@ -23,10 +23,19 @@
 	let animaleVincente = $state(null); // animale più prezioso per l'overlay
 	let showWin = $state(false);
 	let saldo = $state(0);
-	const saldoInsuff = $derived(saldo < COSTO_GIRO);
+	let puntata = $state(1);
+	let puntataUsata = $state(1); // puntata catturata al momento del giro
+	const saldoInsuff = $derived(saldo < puntata || puntata < 0.5);
 	let particles = $state([]);
 	let girato = $state(false);
-	const totalPremioVinto = $derived(vinciteLinee.reduce((s, v) => s + v.animale.premio, 0));
+	let giriRecenti = $state([]); // max 10 spin history { win, premio }
+	const totalPremioVinto = $derived(
+		vinciteLinee.reduce((s, v) => s + v.animale.premio, 0) * (puntataUsata / BASE_BET)
+	);
+
+	function setPuntata(v) {
+		puntata = Math.max(0.5, Math.min(saldo, Math.round(v * 2) / 2));
+	}
 
 	const intervals = [null, null, null];
 
@@ -84,7 +93,11 @@
 	async function handleGira() {
 		if (spinning || saldoInsuff) return;
 
-		spendSaldo(COSTO_GIRO);
+		const puntataAttuale = puntata;
+		const mult = puntataAttuale / BASE_BET;
+		puntataUsata = puntataAttuale;
+
+		spendSaldo(puntataAttuale);
 		saldo = getSaldo();
 
 		// Reset
@@ -110,7 +123,6 @@
 		startReel(1);
 		startReel(2);
 
-		// griglia[riga][colonna] → reel[col] = [griglia[0][col], griglia[1][col], griglia[2][col]]
 		const g = risultato.griglia;
 
 		setTimeout(() => {
@@ -131,8 +143,11 @@
 
 			if (vincita) {
 				unlock('fortunello');
+				let premioTot = 0;
 				for (const v of vinciteLinee) {
-					addSaldo(v.animale.premio, 'slot_vincita');
+					const premioScalato = Math.round(v.animale.premio * mult * 100) / 100;
+					addSaldo(premioScalato, 'slot_vincita');
+					premioTot += premioScalato;
 				}
 				saldo = getSaldo();
 
@@ -143,10 +158,11 @@
 				if (nVincite >= 5) unlock('maniaco');
 				checkEconomyAchievements();
 
+				giriRecenti = [{ win: true, premio: premioTot }, ...giriRecenti].slice(0, 10);
 				particles = buildParticles(animaleVincente);
-				setTimeout(() => {
-					showWin = true;
-				}, 350);
+				setTimeout(() => { showWin = true; }, 350);
+			} else {
+				giriRecenti = [{ win: false, premio: puntataAttuale }, ...giriRecenti].slice(0, 10);
 			}
 
 			logSlotGiro({
@@ -180,15 +196,55 @@
 			<span class="title-icon">🎰</span>
 			<span class="title-text">Slot Machine<br />Animalesca</span>
 		</h1>
-		<p class="subtitle">3 paylines attive &middot; tris su una riga = vincita &middot; €{COSTO_GIRO} a giro</p>
+		<p class="subtitle">3 paylines attive &middot; tris su una riga = vincita &middot; puntata libera</p>
 	</header>
 
 	<!-- ── WALLET BAR ── -->
 	<div class="wallet-bar">
 		<span class="wallet-icon">💰</span>
 		<span class="wallet-saldo">€{saldo.toFixed(2)}</span>
-		<span class="wallet-costo">Costo: €{COSTO_GIRO}/giro</span>
+		<span class="wallet-costo">Puntata: €{puntata.toFixed(puntata % 1 === 0 ? 0 : 1)}/giro</span>
 	</div>
+
+	<!-- ── BET SELECTOR ── -->
+	<div class="bet-selector">
+		<span class="bet-label">🎲 Puntata</span>
+		<div class="bet-chips">
+			{#each [0.5, 1, 2, 5, 10, 20] as p}
+				<button
+					class="bet-chip"
+					class:active={puntata === p}
+					onclick={() => setPuntata(p)}
+					disabled={spinning || p > saldo}
+				>{p % 1 === 0 ? `€${p}` : `€${p.toFixed(1)}`}</button>
+			{/each}
+		</div>
+		<div class="bet-adj-row">
+			<button class="bet-adj" onclick={() => setPuntata(puntata / 2)} disabled={spinning || puntata <= 0.5}>½</button>
+			<div class="bet-display">€{puntata.toFixed(puntata % 1 === 0 ? 0 : 1)}</div>
+			<button class="bet-adj" onclick={() => setPuntata(puntata * 2)} disabled={spinning || puntata * 2 > saldo}>2×</button>
+		</div>
+	</div>
+
+	<!-- ── SPINS HISTORY ── -->
+	{#if giriRecenti.length > 0}
+	<div class="spins-history">
+		<span class="history-label">Ultimi giri</span>
+		<div class="history-dots">
+			{#each giriRecenti as g, i}
+				<div
+					class="h-dot"
+					class:h-win={g.win}
+					class:h-lose={!g.win}
+					style="opacity: {Math.max(0.25, 1 - i * 0.08)}"
+					title={g.win ? `+€${g.premio.toFixed(2)}` : `-€${g.premio.toFixed(2)}`}
+				>
+					{#if g.win}+{(g.premio).toFixed(0)}{:else}✗{/if}
+				</div>
+			{/each}
+		</div>
+	</div>
+	{/if}
 
 	<!-- ── MACHINE ── -->
 	<div class="machine-wrap">
@@ -263,7 +319,7 @@
 					{:else if saldoInsuff}
 						💸 Saldo insufficiente
 					{:else}
-						🎰 GIRA! — €{COSTO_GIRO.toFixed(2)}
+						🎰 GIRA! — €{puntata.toFixed(puntata % 1 === 0 ? 0 : 1)}
 					{/if}
 				</button>
 			</div>
@@ -307,7 +363,7 @@
 									<span class="tier-sym" title={s.nome}>{s.emoji}</span>
 								{/each}
 							</div>
-							<div class="tier-prize">+€{tier.premio}</div>
+							<div class="tier-prize">+€{(tier.premio * (puntata / BASE_BET)).toFixed(tier.premio * (puntata / BASE_BET) % 1 === 0 ? 0 : 2)}</div>
 						</div>
 					{/if}
 				{/each}
@@ -378,14 +434,14 @@
 								<span class="win-multi-nome">{v.animale.nome}</span>
 								<span class="win-multi-linea">Linea {v.linea + 1}</span>
 							</span>
-							<span class="win-multi-prize">+€{v.animale.premio}</span>
+							<span class="win-multi-prize">+€{(v.animale.premio * (puntataUsata / BASE_BET)).toFixed(2)}</span>
 						</div>
 					{/each}
 				</div>
 			{/if}
 
 			<div class="win-sub">Sei un animale fortunato! 🐾</div>
-			<div class="win-premio">+€{totalPremioVinto}.00 vinti! 💰</div>
+			<div class="win-premio">+€{totalPremioVinto.toFixed(2)} vinti! 💰</div>
 			<button class="win-close" onclick={chiudiWin}>Continua a giocare →</button>
 		</div>
 	</div>
@@ -1174,6 +1230,133 @@
 	.win-close:hover {
 		transform: translateY(-2px);
 		box-shadow: 0 6px 24px color-mix(in srgb, var(--win-colore) 60%, transparent);
+	}
+
+	/* ── BET SELECTOR ── */
+	.bet-selector {
+		width: 100%;
+		max-width: 480px;
+		display: flex;
+		flex-direction: column;
+		gap: 0.6rem;
+		background: rgba(0,0,0,0.25);
+		border: 1px solid rgba(255,215,0,0.18);
+		border-radius: 16px;
+		padding: 1rem 1.1rem;
+	}
+	.bet-label {
+		font-size: 0.72rem;
+		font-weight: 700;
+		letter-spacing: 0.12em;
+		color: rgba(255,215,0,0.65);
+		text-transform: uppercase;
+	}
+	.bet-chips {
+		display: flex;
+		gap: 0.4rem;
+		flex-wrap: wrap;
+	}
+	.bet-chip {
+		padding: 0.35rem 0.75rem;
+		background: rgba(255,255,255,0.06);
+		border: 1px solid rgba(255,215,0,0.2);
+		border-radius: 999px;
+		color: rgba(255,215,0,0.7);
+		font-size: 0.82rem;
+		font-weight: 700;
+		cursor: pointer;
+		transition: all 0.15s;
+	}
+	.bet-chip:hover:not(:disabled) {
+		background: rgba(255,215,0,0.12);
+		border-color: rgba(255,215,0,0.5);
+		color: #ffd700;
+	}
+	.bet-chip.active {
+		background: rgba(255,215,0,0.18);
+		border-color: #ffd700;
+		color: #ffd700;
+		box-shadow: 0 0 10px rgba(255,215,0,0.25);
+	}
+	.bet-chip:disabled {
+		opacity: 0.3;
+		cursor: not-allowed;
+	}
+	.bet-adj-row {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+	}
+	.bet-adj {
+		padding: 0.3rem 0.8rem;
+		background: rgba(255,255,255,0.06);
+		border: 1px solid rgba(255,255,255,0.15);
+		border-radius: 8px;
+		color: rgba(255,255,255,0.6);
+		font-size: 0.9rem;
+		font-weight: 700;
+		cursor: pointer;
+		transition: all 0.15s;
+	}
+	.bet-adj:hover:not(:disabled) {
+		background: rgba(255,255,255,0.12);
+		color: #fff;
+	}
+	.bet-adj:disabled { opacity: 0.3; cursor: not-allowed; }
+	.bet-display {
+		flex: 1;
+		text-align: center;
+		font-size: 1.1rem;
+		font-weight: 900;
+		color: #ffd700;
+		letter-spacing: 0.04em;
+	}
+
+	/* ── SPINS HISTORY ── */
+	.spins-history {
+		width: 100%;
+		max-width: 480px;
+		display: flex;
+		align-items: center;
+		gap: 0.6rem;
+		padding: 0.5rem 0.8rem;
+		background: rgba(0,0,0,0.2);
+		border: 1px solid rgba(255,255,255,0.07);
+		border-radius: 12px;
+	}
+	.history-label {
+		font-size: 0.62rem;
+		text-transform: uppercase;
+		letter-spacing: 0.1em;
+		color: rgba(255,255,255,0.25);
+		white-space: nowrap;
+		flex-shrink: 0;
+	}
+	.history-dots {
+		display: flex;
+		gap: 0.3rem;
+		flex-wrap: wrap;
+	}
+	.h-dot {
+		width: 28px;
+		height: 28px;
+		border-radius: 6px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-size: 0.58rem;
+		font-weight: 700;
+		transition: opacity 0.3s;
+	}
+	.h-win {
+		background: rgba(74,222,128,0.18);
+		border: 1px solid rgba(74,222,128,0.4);
+		color: #4ade80;
+	}
+	.h-lose {
+		background: rgba(239,68,68,0.12);
+		border: 1px solid rgba(239,68,68,0.3);
+		color: rgba(255,100,100,0.7);
 	}
 
 	@media (max-width: 480px) {

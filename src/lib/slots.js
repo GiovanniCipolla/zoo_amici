@@ -6,7 +6,7 @@
 
 import { membri, nomeDisplay } from './membri.js';
 
-export const COSTO_GIRO = 2;
+export const BASE_BET = 1;
 
 function calcolaPremio(rank) {
 	if (rank === 1) return 500; // Luisa — tier esclusivo
@@ -20,9 +20,9 @@ function calcolaPremio(rank) {
 function calcolaProbabilita(rank) {
 	if (rank === 1) return 0.000005; // Luisa: praticamente impossibile
 	if (rank <= 3) return 0.0001;    // Leggendario: rarissimo
-	if (rank <= 8) return 0.0003;    // Epico: molto raro
-	if (rank <= 15) return 0.0006;   // Raro: raro
-	return 0.001;                     // Comune: poco comune
+	if (rank <= 8) return 0.0005;    // Epico: molto raro
+	if (rank <= 15) return 0.0012;   // Raro: raro
+	return 0.004;                     // Comune: poco comune
 }
 
 export const SLOT_SIMBOLI = membri.map((m, i) => ({
@@ -42,9 +42,9 @@ const _rank1 = SLOT_SIMBOLI[0];
 export const TIER_GROUPS = [
 	{ label: _rank1.nome.toUpperCase(), premio: 500, colore: _rank1.colore, icon: _rank1.emoji, prob: 'Leggenda' },
 	{ label: 'LEGGENDARIO', premio: 100, colore: '#ffd700', icon: '🏆', prob: 'Ultra Rara' },
-	{ label: 'EPICO', premio: 50, colore: '#c084fc', icon: '✨', prob: 'Molto Rara' },
-	{ label: 'RARO', premio: 10, colore: '#60a5fa', icon: '⭐', prob: 'Rara' },
-	{ label: 'COMUNE', premio: 4, colore: '#86efac', icon: '🎯', prob: 'Comune' }
+	{ label: 'EPICO', premio: 50, colore: '#c084fc', icon: '✨', prob: 'Abbastanza Rara' },
+	{ label: 'RARO', premio: 10, colore: '#60a5fa', icon: '⭐', prob: 'Non troppo Rara' },
+	{ label: 'COMUNE', premio: 4, colore: '#86efac', icon: '🎯', prob: 'Frequente' }
 ].map((t) => ({
 	...t,
 	simboli: SLOT_SIMBOLI.filter((s) => s.premio === t.premio)

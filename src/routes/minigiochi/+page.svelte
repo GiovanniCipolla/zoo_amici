@@ -27,7 +27,7 @@
 		<a href="/slots" class="game-card">
 			<span class="card-emoji">🎰</span>
 			<p class="card-title">Slot Machine</p>
-			<p class="card-desc">€2 a giro · vinci premi in base al rank</p>
+			<p class="card-desc">Puntata libera · tris su una riga = vincita</p>
 			<span class="card-cta">Gioca →</span>
 		</a>
 		<a href="/flappy" class="game-card">
@@ -45,7 +45,7 @@
 		<a href="/cenzino" class="game-card card-cenzino">
 			<span class="card-emoji">🍺</span>
 			<p class="card-title">Zoo a Cenzino</p>
-			<p class="card-desc">€1 a partita · ritirati prima che l'animale sviene</p>
+			<p class="card-desc">Puntata libera · ritirati prima che l'animale sviene</p>
 			<span class="card-cta">Bevi →</span>
 		</a>
 		<a href="/bingo" class="game-card card-bingo">

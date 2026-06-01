@@ -274,6 +274,22 @@
 						{/each}
 					</div>
 
+					<div class="importo-custom">
+						<span class="imp-custom-label">o importo libero:</span>
+						<div class="imp-custom-wrap">
+							<span class="imp-prefix">€</span>
+							<input
+								class="imp-input"
+								type="number"
+								min="0.5"
+								step="0.5"
+								max={saldo}
+								bind:value={importo}
+								onchange={() => importo = Math.max(0.5, Math.min(saldo, importo))}
+							/>
+						</div>
+					</div>
+
 					<div class="pot-win-bar" style="--quot-col: {scelto.quota > 8 ? '#22c55e' : scelto.quota > 4 ? '#eab308' : '#60a5fa'}">
 						<span class="pot-label">Vincita potenziale</span>
 						<span class="pot-val">€{potPremio.toFixed(2)}</span>
@@ -664,6 +680,42 @@
 		border-color: rgba(34, 197, 94, 0.6);
 		color: #4ade80;
 	}
+	.importo-custom {
+		display: flex;
+		align-items: center;
+		gap: 0.6rem;
+		margin-top: 0.3rem;
+	}
+	.imp-custom-label {
+		font-size: 0.72rem;
+		color: rgba(240,240,250,0.35);
+		white-space: nowrap;
+	}
+	.imp-custom-wrap {
+		display: flex;
+		align-items: center;
+		gap: 0.3rem;
+		background: rgba(255,255,255,0.06);
+		border: 1px solid rgba(255,255,255,0.15);
+		border-radius: 10px;
+		padding: 0.3rem 0.7rem;
+	}
+	.imp-prefix {
+		color: rgba(240,240,250,0.5);
+		font-size: 0.9rem;
+		font-weight: 700;
+	}
+	.imp-input {
+		background: transparent;
+		border: none;
+		outline: none;
+		color: #f0f0fa;
+		font-size: 0.9rem;
+		font-weight: 700;
+		width: 64px;
+		font-family: inherit;
+	}
+	.imp-input::-webkit-inner-spin-button { opacity: 0.4; }
 	.pot-win-bar {
 		display: flex;
 		align-items: center;
