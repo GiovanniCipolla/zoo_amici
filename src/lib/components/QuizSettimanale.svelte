@@ -8,7 +8,6 @@
 		formatCountdown,
 		scoreInfo
 	} from '$lib/quiz.js';
-	import { logQuiz } from '$lib/logger.js';
 	import { unlock } from '$lib/achievements.js';
 
 	const quiz = getCurrentQuiz();
@@ -99,8 +98,6 @@
 						localStorage.setItem(storageKey, JSON.stringify({ risposte: nuove }));
 					} catch {}
 				}
-				logQuiz(nuove.filter(Boolean).length, quiz.domande.length, nuove);
-
 				// Achievement
 				unlock('partecipante');
 				if (nuove.filter(Boolean).length === quiz.domande.length) unlock('perfetto');

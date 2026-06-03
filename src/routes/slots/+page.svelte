@@ -4,7 +4,6 @@
 	import { goto } from '$app/navigation';
 	import { SLOT_SIMBOLI, WIN_PARTICLES, BASE_BET, TIER_GROUPS, gira } from '$lib/slots.js';
 	import { getSaldo, spendSaldo, addSaldo } from '$lib/economia.js';
-	import { logSlotGiro } from '$lib/logger.js';
 	import { unlock, checkEconomyAchievements } from '$lib/achievements.js';
 
 	// ── Stato ─────────────────────────────────────────────────────────
@@ -165,13 +164,6 @@
 				giriRecenti = [{ win: false, premio: puntataAttuale }, ...giriRecenti].slice(0, 10);
 			}
 
-			logSlotGiro({
-				simboli: risultato.simboli,
-				vincita: risultato.vincita,
-				animale: risultato.animale,
-				vincite: risultato.vincite,
-				saldo
-			});
 		}, 3100);
 	}
 

@@ -200,6 +200,14 @@
 			<p class="card-desc">Scopri i tuoi badge</p>
 			<span class="card-cta">Vai →</span>
 		</a>
+
+		<!-- Idee per lo Zoo -->
+		<a href="/idee" class="hub-card card-idee">
+			<span class="card-emoji">💡</span>
+			<p class="card-title">Idee per lo Zoo</p>
+			<p class="card-desc">Manda un messaggio anonimo al Re</p>
+			<span class="card-cta">Scrivi →</span>
+		</a>
 	</div>
 
 	<footer>
@@ -669,6 +677,20 @@
 		transform: translateY(-5px) scale(1.02);
 	}
 	.card-achievement .card-cta { color: #4ade80; }
+
+	.card-idee {
+		grid-column: 1 / -1;
+		width: calc(50% - 0.7rem);
+		margin: 0 auto;
+	}
+
+	.card-idee:hover {
+		background: rgba(124, 58, 237, 0.1);
+		border-color: rgba(124, 58, 237, 0.4);
+		box-shadow: 0 12px 44px rgba(124, 58, 237, 0.18);
+		transform: translateY(-5px) scale(1.02);
+	}
+	.card-idee .card-cta { color: #a78bfa; }
 
 	/* ── FOOTER ── */
 	footer {

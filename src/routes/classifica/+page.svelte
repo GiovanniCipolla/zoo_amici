@@ -4,7 +4,6 @@
 	import { membri } from '$lib/membri.js';
 	import CardAnimal from '$lib/components/CardAnimal.svelte';
 	import Modal from '$lib/components/Modal.svelte';
-	import { logVisita } from '$lib/logger.js';
 	import { unlock, checkEconomyAchievements } from '$lib/achievements.js';
 	import { bonusVisitaOggi, getStreak, addSaldo } from '$lib/economia.js';
 
@@ -88,7 +87,6 @@
 	}
 
 	onMount(() => {
-		logVisita();
 		unlock('benvenuto');
 		checkEconomyAchievements();
 		if (bonusVisitaOggi()) {
