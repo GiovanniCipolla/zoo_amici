@@ -54,7 +54,7 @@
 	<div class="info-box">
 		<p class="info-line">
 			<span class="info-icon">🦁</span>
-			<span>Questo messaggio arriverà direttamente a <strong>Yayà</strong>, Re indiscusso dello Zoo.</span>
+			<span>Questo messaggio arriverà direttamente al <strong>Re indiscusso dello Zoo</strong>.</span>
 		</p>
 		<p class="info-line">
 			<span class="info-icon">🕵️</span>
