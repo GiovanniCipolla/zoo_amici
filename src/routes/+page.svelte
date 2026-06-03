@@ -179,10 +179,18 @@
 
 		<!-- Minigiochi -->
 		<a href="/minigiochi" class="hub-card card-minigiochi">
-			<span class="card-emoji">🎰</span>
+			<span class="card-emoji">🎮</span>
 			<p class="card-title">Minigiochi</p>
-			<p class="card-desc">Tenta la fortuna</p>
+			<p class="card-desc">Flappy Zoo · nessuna puntata</p>
 			<span class="card-cta">Vai →</span>
+		</a>
+
+		<!-- Sala Ludopatia -->
+		<a href="/ludopatia" class="hub-card card-ludopatia">
+			<span class="card-emoji">🎰</span>
+			<p class="card-title">Sala Ludopatia</p>
+			<p class="card-desc">Slot, scommesse e bluff · a tuo rischio</p>
+			<span class="card-cta">Entra →</span>
 		</a>
 
 		<!-- Achievement -->
@@ -640,6 +648,20 @@
 	}
 	.card-minigiochi .card-cta { color: #fbbf24; }
 
+	.card-ludopatia:hover {
+		background: rgba(220, 38, 38, 0.1);
+		border-color: rgba(220, 38, 38, 0.4);
+		box-shadow: 0 12px 44px rgba(220, 38, 38, 0.18);
+		transform: translateY(-5px) scale(1.02);
+	}
+	.card-ludopatia .card-cta { color: #f87171; }
+
+	.card-achievement {
+		grid-column: 1 / -1;
+		width: calc(50% - 0.7rem);
+		margin: 0 auto;
+	}
+
 	.card-achievement:hover {
 		background: rgba(34, 197, 94, 0.08);
 		border-color: rgba(34, 197, 94, 0.35);
@@ -675,5 +697,8 @@
 		.card-emoji { font-size: 2.4rem; }
 		.card-title { font-size: 1.3rem; }
 		.card-desc { font-size: 0.72rem; }
+		.card-achievement {
+			width: 100%;
+		}
 	}
 </style>

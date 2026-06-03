@@ -11,6 +11,7 @@
 		creaTorneo,
 		getPartite,
 		getVoti,
+		getVotiMultiple,
 		vota,
 		haVotato,
 		getMembro,
@@ -19,7 +20,9 @@
 		getPercent,
 		formatCountdown,
 		formatOra,
-		formatData
+		formatData,
+		getNomeRound,
+		checkEAvanzaRound
 	} from '$lib/torneo.js';
 
 	// ── STATE ──────────────────────────────────────────────────────────────
@@ -42,6 +45,10 @@
 	let dettaglioVoti = $state([]);
 	let loadingDettaglio = $state(false);
 
+	// Campione finale e cache vincitori per la visualizzazione bracket
+	let campione = $state(null);
+	let vincitoriCache = $state({});
+
 	// Countdown live
 	let countdownStr = $state('');
 	let interval = null;
@@ -54,6 +61,11 @@
 			let t = await getTorneoAttivo();
 			if (!t) t = await creaTorneo();
 			torneo = t;
+
+			// Avanza al round successivo se quello corrente è completato
+			await checkEAvanzaRound(t.id);
+
+			// Ricarica tutte le partite (include eventuale nuovo round)
 			partite = await getPartite(t.id);
 
 			const now = Date.now();
@@ -70,6 +82,34 @@
 				const fp = await getFingerprint();
 				mioVoto = await haVotato(partitaAttiva.id, sid, fp);
 				fase = mioVoto ? 'risultati' : 'vota';
+			}
+
+			// Pre-carica i vincitori di tutte le partite completate (1 sola query)
+			campione = null;
+			const completate = partite.filter((p) => now >= new Date(p.data_fine).getTime());
+			if (completate.length > 0) {
+				const tuttiVoti = await getVotiMultiple(completate.map((p) => p.id));
+				const cache = {};
+				for (const p of completate) {
+					const vp = tuttiVoti.filter((v) => v.partita_id === p.id);
+					if (vp.length === 0) continue;
+					const v1 = vp.filter((v) => v.votato === p.membro1).length;
+					const v2 = vp.filter((v) => v.votato === p.membro2).length;
+					cache[p.id] = v1 >= v2 ? p.membro1 : p.membro2;
+				}
+				vincitoriCache = cache;
+
+				// Verifica campione: finale = round massimo con 1 sola partita
+				if (partite.length > 0) {
+					const roundMax = Math.max(...partite.map((p) => p.round));
+					const partiteFinale = partite.filter((p) => p.round === roundMax);
+					if (partiteFinale.length === 1) {
+						const finale = partiteFinale[0];
+						if (now >= new Date(finale.data_fine).getTime()) {
+							campione = cache[finale.id] || finale.membro1;
+						}
+					}
+				}
 			}
 		} catch (e) {
 			errore = e.message;
@@ -204,6 +244,17 @@
 	const p1 = $derived(getPercent(partitaAttiva?.membro1 ?? '', votiAttivi));
 	const p2 = $derived(getPercent(partitaAttiva?.membro2 ?? '', votiAttivi));
 	const selMembro = $derived(selezionato ? getMembro(selezionato) : null);
+
+	// Raggruppamento per round
+	const partitePerRound = $derived(
+		partite.reduce((acc, p) => {
+			if (!acc[p.round]) acc[p.round] = [];
+			acc[p.round].push(p);
+			return acc;
+		}, {})
+	);
+	const rounds = $derived(Object.keys(partitePerRound).map(Number).sort((a, b) => a - b));
+	const roundAttuale = $derived(rounds.length > 0 ? Math.max(...rounds) : 1);
 </script>
 
 <!-- ── BG BLOBS ── -->
@@ -229,7 +280,7 @@
 			<span class="hero-emoji">🏟️</span>
 			CHAMPIONSHIP
 		</h1>
-		<p class="hero-sub">16esimi di Finale · 32 bestie, 1 solo vincitore</p>
+		<p class="hero-sub">{getNomeRound(roundAttuale)} · 32 bestie, 1 solo vincitore</p>
 		<div class="hero-trofei" aria-hidden="true">
 			<span>🥇</span><span>🥈</span><span>🥉</span>
 		</div>
@@ -259,7 +310,7 @@
 				<span class="arena-tag">⚔️ Sfida #{partitaAttiva.posizione} · In corso ora</span>
 				<span class="arena-countdown">{countdownStr}</span>
 			</div>
-			<p class="arena-label">Partita {partitaAttiva.posizione} di 16 · Round 1</p>
+			<p class="arena-label">Partita {partitaAttiva.posizione} di {partitePerRound[partitaAttiva.round]?.length ?? '?'} · {getNomeRound(partitaAttiva.round)}</p>
 
 			{#if fase === 'vota'}
 				<!-- PRE-VOTO: scegli il tuo campione -->
@@ -409,7 +460,7 @@
 		{@const pm1 = getMembro(prossima.membro1)}
 		{@const pm2 = getMembro(prossima.membro2)}
 		<section class="prossima-wrap">
-			<span class="prossima-tag">⏳ Prossima sfida</span>
+			<span class="prossima-tag">⏳ {getNomeRound(prossima.round)} · Sfida #{prossima.posizione}</span>
 			<p class="prossima-data">
 				{formatData(prossima.data_inizio)} · {new Date(prossima.data_inizio).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })}
 			</p>
@@ -421,117 +472,172 @@
 			<p class="prossima-hint">Torna domani per votare!</p>
 		</section>
 
+	{:else if campione}
+		<!-- ══════════════════════════════════════════════════════════════
+		     CAMPIONE
+		══════════════════════════════════════════════════════════════ -->
+		{@const campMembro = getMembro(campione)}
+		<section class="campione-wrap">
+			<div class="campione-rays" aria-hidden="true"></div>
+			<span class="campione-trofeo">🏆</span>
+			<p class="campione-label">CAMPIONE ZOO AMICI 2025</p>
+			<div class="campione-card" style="--accent: {campMembro?.colore || '#e8b84b'}">
+				<span class="campione-emoji">{campMembro?.emoji}</span>
+				<h2 class="campione-nome">{campione}</h2>
+				<p class="campione-animale">{campMembro?.animale}</p>
+				<p class="campione-tagline">"{campMembro?.tagline}"</p>
+			</div>
+		</section>
+
 	{:else if passate.length === partite.length && partite.length > 0}
-		<!-- TORNEO COMPLETATO -->
+		<!-- Round completato, prossima fase in arrivo -->
 		<section class="completo-wrap">
-			<span class="completo-emoji">🏆</span>
-			<h2>Round 1 Completato!</h2>
-			<p>Tutti e 16 i match del primo round sono stati disputati.</p>
+			<span class="completo-emoji">⚔️</span>
+			<h2>{getNomeRound(roundAttuale)} Completato!</h2>
+			<p>Il prossimo round verrà generato automaticamente al prossimo aggiornamento.</p>
 		</section>
 	{/if}
 
 	<!-- ══════════════════════════════════════════════════════════════
-	     CALENDARIO / SFIDE PASSATE
+	     TABELLONE MULTI-ROUND
 	══════════════════════════════════════════════════════════════ -->
 	{#if partite.length > 0}
-		<section class="calendario">
-			<div class="cal-header">
-				<span class="cal-title">📅 Calendario · Round 1</span>
-				<span class="cal-sub">{passate.length}/{partite.length} disputate</span>
-			</div>
+		<section class="tabellone">
+			{#each rounds.slice().reverse() as round}
+				{@const pr = partitePerRound[round]}
+				{@const nComplete = pr.filter((p) => Date.now() >= new Date(p.data_fine).getTime()).length}
+				{@const isRoundAttuale = round === roundAttuale}
 
-			<!-- Sfide passate -->
-			{#each passate as p}
-				{@const pm1 = getMembro(p.membro1)}
-				{@const pm2 = getMembro(p.membro2)}
-				<div class="cal-partita completata">
-					<button class="cal-row" onclick={() => apriDettaglio(p)}>
-						<span class="cal-pos">#{p.posizione}</span>
-						<span class="cal-data-small">{formatData(p.data_inizio)}</span>
-						<div class="cal-matchup">
-							<span class="cal-lato">{pm1?.emoji} {p.membro1}</span>
-							<span class="cal-vs">vs</span>
-							<span class="cal-lato">{pm2?.emoji} {p.membro2}</span>
+				<div class="round-section" class:round-corrente={isRoundAttuale}>
+					<!-- Round header -->
+					<div class="round-hdr">
+						<div class="round-hdr-left">
+							<span class="round-badge" class:round-badge-gold={isRoundAttuale}>R{round}</span>
+							<div>
+								<span class="round-nome">{getNomeRound(round)}</span>
+								<span class="round-count">{nComplete}/{pr.length} disputate</span>
+							</div>
 						</div>
-						<span class="cal-stato completata-badge">✓ Completata</span>
-						<span class="cal-chevron" class:open={dettaglioPartita?.id === p.id}>›</span>
-					</button>
+						<span
+							class="round-stato"
+							class:round-stato-ok={nComplete === pr.length}
+							class:round-stato-live={nComplete < pr.length && nComplete > 0}
+							class:round-stato-wait={nComplete === 0}
+						>
+							{nComplete === pr.length ? '✓ Completo' : nComplete > 0 ? '⚔️ In corso' : '⏳ In attesa'}
+						</span>
+					</div>
 
-					<!-- Dettaglio espandibile -->
-					{#if dettaglioPartita?.id === p.id}
-						<div class="cal-dettaglio">
-							{#if loadingDettaglio}
-								<p class="det-loading">Caricamento...</p>
-							{:else}
-								{@const dp1 = getPercent(p.membro1, dettaglioVoti)}
-								{@const dp2 = getPercent(p.membro2, dettaglioVoti)}
-								{@const vincitore = getVincitoreCalcolato(p, dettaglioVoti)}
-								<div class="det-risultato">
-									<div class="det-lato" class:vincitore={vincitore === p.membro1}>
-										<span class="det-emoji">{pm1?.emoji}</span>
-										<span class="det-nome">{p.membro1}</span>
-										{#if vincitore === p.membro1}<span class="det-crown">👑</span>{/if}
-										<span class="det-pct">{dp1}%</span>
-									</div>
-									<div class="det-center">
-										<span class="det-vs">VS</span>
-										<span class="det-tot">{dettaglioVoti.length} voti</span>
-									</div>
-									<div class="det-lato" class:vincitore={vincitore === p.membro2}>
-										<span class="det-emoji">{pm2?.emoji}</span>
-										<span class="det-nome">{p.membro2}</span>
-										{#if vincitore === p.membro2}<span class="det-crown">👑</span>{/if}
-										<span class="det-pct">{dp2}%</span>
-									</div>
-								</div>
-								{#if dettaglioVoti.length > 0}
-									<div class="det-votanti">
-										{#each dettaglioVoti as v}
-											{@const vm = getMembro(v.votato)}
-											<span class="det-votante" style="--accent: {vm?.colore || '#888'}">
-												{v.nominativo || 'Anonimo'} → {vm?.emoji} {v.votato}
-											</span>
-										{/each}
+					<!-- Match cards -->
+					<div class="bk-grid" class:bk-grid-wide={pr.length <= 2}>
+						{#each pr as p}
+							{@const pm1 = getMembro(p.membro1)}
+							{@const pm2 = getMembro(p.membro2)}
+							{@const isPassata = Date.now() >= new Date(p.data_fine).getTime()}
+							{@const isAttiva = partitaAttiva?.id === p.id}
+							{@const vincitore = vincitoriCache[p.id] ?? null}
+
+							<div class="bk-wrap">
+								<!-- Card principale -->
+								{#if isPassata}
+									<button class="bk-card bk-done" onclick={() => apriDettaglio(p)}>
+										<div class="bk-side" class:bk-winner={vincitore === p.membro1} class:bk-loser={vincitore !== null && vincitore !== p.membro1}>
+											<span class="bk-emoji">{pm1?.emoji}</span>
+											<span class="bk-nome">{p.membro1}</span>
+											{#if vincitore === p.membro1}<span class="bk-crown">👑</span>{/if}
+										</div>
+										<div class="bk-center">
+											<span class="bk-vs">VS</span>
+											<span class="bk-data">{formatData(p.data_inizio)}</span>
+										</div>
+										<div class="bk-side bk-right" class:bk-winner={vincitore === p.membro2} class:bk-loser={vincitore !== null && vincitore !== p.membro2}>
+											{#if vincitore === p.membro2}<span class="bk-crown">👑</span>{/if}
+											<span class="bk-nome">{p.membro2}</span>
+											<span class="bk-emoji">{pm2?.emoji}</span>
+										</div>
+										<span class="bk-stato bk-done-badge">
+											{vincitore ? '👑' : '✓'}
+										</span>
+										<span class="bk-chevron" class:open={dettaglioPartita?.id === p.id}>›</span>
+									</button>
+								{:else if isAttiva}
+									<div class="bk-card bk-live">
+										<div class="bk-side">
+											<span class="bk-emoji">{pm1?.emoji}</span>
+											<span class="bk-nome">{p.membro1}</span>
+										</div>
+										<div class="bk-center">
+											<span class="bk-vs bk-vs-live">VS</span>
+											<span class="bk-data">Oggi</span>
+										</div>
+										<div class="bk-side bk-right">
+											<span class="bk-nome">{p.membro2}</span>
+											<span class="bk-emoji">{pm2?.emoji}</span>
+										</div>
+										<span class="bk-stato bk-live-badge">⚡ Live</span>
 									</div>
 								{:else}
-									<p class="det-nessuno">Nessun voto registrato per questa sfida.</p>
+									<div class="bk-card bk-future">
+										<div class="bk-side bk-muted">
+											<span class="bk-emoji">{pm1?.emoji}</span>
+											<span class="bk-nome">{p.membro1}</span>
+										</div>
+										<div class="bk-center">
+											<span class="bk-vs">VS</span>
+											<span class="bk-data">{formatData(p.data_inizio)}</span>
+										</div>
+										<div class="bk-side bk-right bk-muted">
+											<span class="bk-nome">{p.membro2}</span>
+											<span class="bk-emoji">{pm2?.emoji}</span>
+										</div>
+										<span class="bk-stato bk-future-badge">⏳</span>
+									</div>
 								{/if}
-							{/if}
-						</div>
-					{/if}
-				</div>
-			{/each}
 
-			<!-- Sfida attiva nel calendario -->
-			{#if partitaAttiva}
-				<div class="cal-partita attiva-cal">
-					<div class="cal-row no-btn">
-						<span class="cal-pos">#{partitaAttiva.posizione}</span>
-						<span class="cal-data-small">Oggi</span>
-						<div class="cal-matchup">
-							<span class="cal-lato">{mem1?.emoji} {partitaAttiva.membro1}</span>
-							<span class="cal-vs">vs</span>
-							<span class="cal-lato">{mem2?.emoji} {partitaAttiva.membro2}</span>
-						</div>
-						<span class="cal-stato attiva-badge">⚡ Live</span>
-					</div>
-				</div>
-			{/if}
-
-			<!-- Sfide future -->
-			{#each inAttesa as p}
-				{@const pm1 = getMembro(p.membro1)}
-				{@const pm2 = getMembro(p.membro2)}
-				<div class="cal-partita futura">
-					<div class="cal-row no-btn">
-						<span class="cal-pos">#{p.posizione}</span>
-						<span class="cal-data-small">{formatData(p.data_inizio)}</span>
-						<div class="cal-matchup">
-							<span class="cal-lato muted">{pm1?.emoji} {p.membro1}</span>
-							<span class="cal-vs muted">vs</span>
-							<span class="cal-lato muted">{pm2?.emoji} {p.membro2}</span>
-						</div>
-						<span class="cal-stato futura-badge">⏳ Upcoming</span>
+								<!-- Dettaglio espandibile -->
+								{#if dettaglioPartita?.id === p.id}
+									<div class="cal-dettaglio">
+										{#if loadingDettaglio}
+											<p class="det-loading">Caricamento...</p>
+										{:else}
+											{@const dp1 = getPercent(p.membro1, dettaglioVoti)}
+											{@const dp2 = getPercent(p.membro2, dettaglioVoti)}
+											{@const vinc = getVincitoreCalcolato(p, dettaglioVoti)}
+											<div class="det-risultato">
+												<div class="det-lato" class:vincitore={vinc === p.membro1}>
+													<span class="det-emoji">{pm1?.emoji}</span>
+													<span class="det-nome">{p.membro1}</span>
+													{#if vinc === p.membro1}<span class="det-crown">👑</span>{/if}
+													<span class="det-pct">{dp1}%</span>
+												</div>
+												<div class="det-center">
+													<span class="det-vs">VS</span>
+													<span class="det-tot">{dettaglioVoti.length} voti</span>
+												</div>
+												<div class="det-lato" class:vincitore={vinc === p.membro2}>
+													<span class="det-emoji">{pm2?.emoji}</span>
+													<span class="det-nome">{p.membro2}</span>
+													{#if vinc === p.membro2}<span class="det-crown">👑</span>{/if}
+													<span class="det-pct">{dp2}%</span>
+												</div>
+											</div>
+											{#if dettaglioVoti.length > 0}
+												<div class="det-votanti">
+													{#each dettaglioVoti as v}
+														{@const vm = getMembro(v.votato)}
+														<span class="det-votante" style="--accent: {vm?.colore || '#888'}">
+															{v.nominativo || 'Anonimo'} → {vm?.emoji} {v.votato}
+														</span>
+													{/each}
+												</div>
+											{:else}
+												<p class="det-nessuno">Nessun voto registrato per questa sfida.</p>
+											{/if}
+										{/if}
+									</div>
+								{/if}
+							</div>
+						{/each}
 					</div>
 				</div>
 			{/each}
@@ -1355,6 +1461,282 @@
 		font-style: italic;
 	}
 
+	/* ── CAMPIONE ── */
+	.campione-wrap {
+		position: relative;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 1rem;
+		padding: 3.5rem 2rem;
+		text-align: center;
+		margin-bottom: 3rem;
+		overflow: hidden;
+		border-radius: 28px;
+		background: rgba(232,184,75,0.05);
+		border: 1px solid rgba(232,184,75,0.2);
+	}
+	.campione-rays {
+		position: absolute;
+		inset: 0;
+		background: conic-gradient(
+			from 0deg at 50% 40%,
+			transparent 0deg,
+			rgba(232,184,75,0.06) 10deg,
+			transparent 20deg,
+			rgba(232,184,75,0.04) 30deg,
+			transparent 40deg,
+			rgba(232,184,75,0.06) 50deg,
+			transparent 60deg
+		);
+		animation: rotate-rays 20s linear infinite;
+		pointer-events: none;
+	}
+	@keyframes rotate-rays { to { transform: rotate(360deg); } }
+	.campione-trofeo {
+		font-size: 4rem;
+		animation: bounce-trofeo 2s ease-in-out infinite;
+		display: block;
+		position: relative;
+		z-index: 1;
+	}
+	@keyframes bounce-trofeo {
+		0%,100% { transform: translateY(0) scale(1); }
+		50%      { transform: translateY(-10px) scale(1.08); }
+	}
+	.campione-label {
+		font-size: 0.68rem;
+		text-transform: uppercase;
+		letter-spacing: 0.28em;
+		color: rgba(232,184,75,0.6);
+		font-weight: 700;
+		position: relative;
+		z-index: 1;
+	}
+	.campione-card {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.4rem;
+		padding: 2rem 3rem;
+		background: color-mix(in srgb, var(--accent) 10%, transparent);
+		border: 2px solid var(--accent);
+		border-radius: 24px;
+		position: relative;
+		z-index: 1;
+		box-shadow: 0 0 60px color-mix(in srgb, var(--accent) 20%, transparent);
+	}
+	.campione-emoji {
+		font-size: 4rem;
+		filter: drop-shadow(0 0 20px color-mix(in srgb, var(--accent) 60%, transparent));
+	}
+	.campione-nome {
+		font-family: 'Bebas Neue', sans-serif;
+		font-size: clamp(2.5rem, 8vw, 4rem);
+		letter-spacing: 0.08em;
+		color: var(--accent);
+		margin: 0;
+	}
+	.campione-animale {
+		font-size: 0.72rem;
+		text-transform: uppercase;
+		letter-spacing: 0.18em;
+		color: rgba(240,240,250,0.35);
+	}
+	.campione-tagline {
+		font-size: 0.85rem;
+		font-style: italic;
+		color: rgba(240,240,250,0.45);
+		margin-top: 0.2rem;
+	}
+
+	/* ── TABELLONE MULTI-ROUND ── */
+	.tabellone {
+		margin-top: 1.5rem;
+		display: flex;
+		flex-direction: column;
+		gap: 1.5rem;
+	}
+
+	.round-section {
+		border-radius: 20px;
+		overflow: hidden;
+		border: 1px solid rgba(255,255,255,0.06);
+		background: rgba(255,255,255,0.015);
+	}
+	.round-section.round-corrente {
+		border-color: rgba(232,184,75,0.2);
+		background: rgba(232,184,75,0.03);
+	}
+
+	.round-hdr {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: 0.9rem 1.1rem;
+		border-bottom: 1px solid rgba(255,255,255,0.06);
+	}
+	.round-corrente .round-hdr {
+		border-bottom-color: rgba(232,184,75,0.12);
+	}
+	.round-hdr-left {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+	}
+	.round-badge {
+		font-family: 'Bebas Neue', sans-serif;
+		font-size: 0.85rem;
+		letter-spacing: 0.1em;
+		padding: 0.25rem 0.65rem;
+		background: rgba(255,255,255,0.07);
+		border-radius: 999px;
+		color: rgba(240,240,250,0.4);
+		flex-shrink: 0;
+	}
+	.round-badge-gold {
+		background: rgba(232,184,75,0.15);
+		color: #e8b84b;
+	}
+	.round-nome {
+		font-family: 'Bebas Neue', sans-serif;
+		font-size: 1.05rem;
+		letter-spacing: 0.06em;
+		color: rgba(240,240,250,0.75);
+		display: block;
+	}
+	.round-corrente .round-nome { color: #e8b84b; }
+	.round-count {
+		font-size: 0.68rem;
+		color: rgba(240,240,250,0.3);
+		display: block;
+	}
+	.round-stato {
+		font-size: 0.65rem;
+		font-weight: 700;
+		letter-spacing: 0.08em;
+		padding: 0.25rem 0.7rem;
+		border-radius: 999px;
+		white-space: nowrap;
+	}
+	.round-stato-ok  { background: rgba(74,222,128,0.1); color: #4ade80; }
+	.round-stato-live { background: rgba(232,75,75,0.12); color: #e84b4b; animation: pulse-text 1.5s ease-in-out infinite; }
+	.round-stato-wait { background: rgba(232,184,75,0.1); color: rgba(232,184,75,0.45); }
+
+	/* Bracket grid — 2 colonne su desktop per round con molte partite */
+	.bk-grid {
+		padding: 0.75rem;
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 0.45rem;
+	}
+	.bk-grid.bk-grid-wide {
+		grid-template-columns: 1fr;
+	}
+
+	.bk-wrap { display: flex; flex-direction: column; }
+
+	/* Card partita */
+	.bk-card {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		padding: 0.7rem 0.9rem;
+		border-radius: 12px;
+		border: 1px solid rgba(255,255,255,0.06);
+		background: rgba(255,255,255,0.03);
+		font-family: 'Outfit', sans-serif;
+		cursor: default;
+		width: 100%;
+		text-align: left;
+		transition: background 0.18s;
+	}
+	.bk-card.bk-done {
+		cursor: pointer;
+	}
+	.bk-card.bk-done:hover {
+		background: rgba(255,255,255,0.06);
+	}
+	.bk-card.bk-live {
+		border-color: rgba(232,75,75,0.28);
+		background: rgba(232,75,75,0.05);
+	}
+	.bk-card.bk-future {
+		opacity: 0.55;
+	}
+
+	.bk-side {
+		flex: 1;
+		display: flex;
+		align-items: center;
+		gap: 0.35rem;
+		min-width: 0;
+	}
+	.bk-side.bk-right {
+		justify-content: flex-end;
+		flex-direction: row-reverse;
+	}
+	.bk-emoji { font-size: 1.25rem; flex-shrink: 0; }
+	.bk-nome {
+		font-size: 0.8rem;
+		font-weight: 600;
+		color: rgba(240,240,250,0.65);
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+	.bk-side.bk-winner .bk-nome {
+		color: #e8b84b;
+		font-weight: 700;
+	}
+	.bk-side.bk-loser .bk-nome {
+		color: rgba(240,240,250,0.3);
+		text-decoration: line-through;
+		text-decoration-color: rgba(240,240,250,0.15);
+	}
+	.bk-side.bk-muted .bk-nome { color: rgba(240,240,250,0.3); }
+	.bk-crown { font-size: 0.9rem; flex-shrink: 0; }
+
+	.bk-center {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.1rem;
+		flex-shrink: 0;
+		padding: 0 0.2rem;
+	}
+	.bk-vs {
+		font-family: 'Bebas Neue', sans-serif;
+		font-size: 0.9rem;
+		letter-spacing: 0.1em;
+		color: rgba(240,240,250,0.2);
+	}
+	.bk-vs-live { color: rgba(232,75,75,0.7); animation: vs-pulse 1.5s ease-in-out infinite; }
+	.bk-data {
+		font-size: 0.58rem;
+		color: rgba(240,240,250,0.22);
+		white-space: nowrap;
+	}
+
+	.bk-stato {
+		flex-shrink: 0;
+		font-size: 0.62rem;
+		font-weight: 700;
+		padding: 0.15rem 0.45rem;
+		border-radius: 999px;
+	}
+	.bk-done-badge  { background: rgba(232,184,75,0.1); color: #e8b84b; }
+	.bk-live-badge  { background: rgba(232,75,75,0.15); color: #e84b4b; animation: pulse-text 1.5s ease-in-out infinite; }
+	.bk-future-badge { background: rgba(255,255,255,0.05); color: rgba(240,240,250,0.3); }
+
+	.bk-chevron {
+		font-size: 1.1rem;
+		color: rgba(240,240,250,0.3);
+		transition: transform 0.25s;
+		flex-shrink: 0;
+	}
+	.bk-chevron.open { transform: rotate(90deg); color: #e8b84b; }
+
 	/* ── ANIM ── */
 	@keyframes fade-up {
 		from { opacity: 0; transform: translateY(16px); }
@@ -1380,19 +1762,22 @@
 		.barra-emoji { font-size: 1.4rem; }
 		.barra-tagline { display: none; }
 
-		/* Votanti — nessuna override: il layout 3-col funziona già */
+		/* Votanti — nessuna override */
 		.votanti-wrap { padding: 0.9rem 0.9rem; }
 
-		/* Calendario */
-		.cal-row {
-			grid-template-columns: 20px 1fr auto auto;
-			gap: 0.4rem;
-			padding: 0.6rem 0.7rem;
-			font-size: 0.76rem;
-		}
-		.cal-data-small { display: none; }
-		.cal-matchup { font-size: 0.74rem; gap: 0.3rem; }
-		.cal-stato { font-size: 0.58rem; padding: 0.15rem 0.35rem; letter-spacing: 0; }
-		.cal-chevron { display: block; font-size: 1rem; }
+		/* Bracket mobile: 1 colonna sempre */
+		.bk-grid { grid-template-columns: 1fr; gap: 0.35rem; padding: 0.5rem; }
+		.bk-card { padding: 0.6rem 0.7rem; }
+		.bk-emoji { font-size: 1.1rem; }
+		.bk-nome { font-size: 0.76rem; }
+		.bk-vs { font-size: 0.8rem; }
+
+		/* Round header mobile */
+		.round-nome { font-size: 0.9rem; }
+		.round-stato { font-size: 0.6rem; padding: 0.2rem 0.5rem; }
+
+		/* Campione mobile */
+		.campione-card { padding: 1.5rem 1.5rem; }
+		.campione-nome { font-size: clamp(2rem, 10vw, 3rem); }
 	}
 </style>

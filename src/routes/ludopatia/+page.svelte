@@ -1,7 +1,3 @@
-<script>
-	import CompatibilitaAnimali from '$lib/components/CompatibilitaAnimali.svelte';
-</script>
-
 <!-- bg blobs decorativi -->
 <div class="bg-blobs" aria-hidden="true">
 	<div class="blob blob-1"></div>
@@ -15,29 +11,50 @@
 
 <main>
 	<header>
-		<p class="pre-title">Sezione divertimento</p>
+		<p class="pre-title">Giochi d'azzardo dello zoo</p>
 		<h1>
-			<span class="title-icon">🎮</span>
-			<span class="title-text">Minigiochi</span>
+			<span class="title-icon">🎰</span>
+			<span class="title-text">Sala Ludopatia</span>
 		</h1>
-		<p class="subtitle">Giochi senza puntate · solo per il gusto di farlo</p>
+		<p class="subtitle">Scommetti · bluffa · rovina il portafoglio</p>
+		<p class="disclaimer">⚠️ Il responsabile del tuo saldo siamo noi. Eh no, siete voi.</p>
 	</header>
 
-	<div class="cards-grid cards-grid--single">
-		<a href="/flappy" class="game-card">
-			<span class="card-emoji">🦅</span>
-			<p class="card-title">Flappy Zoo</p>
-			<p class="card-desc">Scegli un animale · sopravvivi il più a lungo possibile</p>
-			<span class="card-cta">Vola →</span>
+	<div class="cards-grid">
+		<a href="/slots" class="game-card card-slots">
+			<span class="card-emoji">🎰</span>
+			<p class="card-title">Slot Machine</p>
+			<p class="card-desc">Puntata libera · tris su una riga = vincita</p>
+			<span class="card-cta">Gira →</span>
+		</a>
+		<a href="/corsa" class="game-card card-corsa">
+			<span class="card-emoji">🏇</span>
+			<p class="card-title">Via Muraverde</p>
+			<p class="card-desc">7 animali · quote random · scommetti sul vincitore</p>
+			<span class="card-cta">Scommetti →</span>
+		</a>
+		<a href="/cenzino" class="game-card card-cenzino">
+			<span class="card-emoji">🍺</span>
+			<p class="card-title">Zoo a Cenzino</p>
+			<p class="card-desc">Puntata libera · ritirati prima che l'animale sviene</p>
+			<span class="card-cta">Bevi →</span>
+		</a>
+		<a href="/bingo" class="game-card card-bingo">
+			<span class="card-emoji">🎱</span>
+			<p class="card-title">Bingo a Pescara</p>
+			<p class="card-desc">Cartelle a prezzo libero · sfida i 32 animali al tavolo</p>
+			<span class="card-cta">Gioca →</span>
+		</a>
+		<a href="/bluff" class="game-card card-bluff">
+			<span class="card-emoji">🎲</span>
+			<p class="card-title">Dati del Bluff</p>
+			<p class="card-desc">1–50W · Bluffa o sfida</p>
+			<span class="card-cta">Bluffa →</span>
 		</a>
 	</div>
 
-	<div class="compat-section">
-		<CompatibilitaAnimali />
-	</div>
-
 	<footer>
-		<p>🎰 Per slot, scommesse e bluff vai in <a href="/ludopatia">Sala Ludopatia</a></p>
+		<p>🃏 Il banco vince sempre · ma almeno ci proviamo</p>
 	</footer>
 </main>
 
@@ -60,30 +77,30 @@
 	.blob-1 {
 		width: 520px;
 		height: 520px;
-		background: radial-gradient(circle, #7c3aed 0%, transparent 70%);
+		background: radial-gradient(circle, #dc2626 0%, transparent 70%);
 		top: -140px;
 		left: -100px;
-		opacity: 0.14;
+		opacity: 0.12;
 		animation: drift 20s ease-in-out infinite;
 	}
 
 	.blob-2 {
 		width: 420px;
 		height: 420px;
-		background: radial-gradient(circle, #1a56db 0%, transparent 70%);
+		background: radial-gradient(circle, #7c3aed 0%, transparent 70%);
 		bottom: -100px;
 		right: -80px;
-		opacity: 0.12;
+		opacity: 0.1;
 		animation: drift 24s ease-in-out infinite reverse;
 	}
 
 	.blob-3 {
 		width: 280px;
 		height: 280px;
-		background: radial-gradient(circle, #ffd700 0%, transparent 70%);
+		background: radial-gradient(circle, #f59e0b 0%, transparent 70%);
 		top: 40%;
 		left: 55%;
-		opacity: 0.1;
+		opacity: 0.09;
 		animation: drift 28s ease-in-out infinite 6s;
 	}
 
@@ -164,17 +181,17 @@
 	.title-icon {
 		font-size: clamp(2.2rem, 5vw, 4rem);
 		display: inline-block;
-		animation: rock 4s ease-in-out infinite;
+		animation: spin-slot 4s ease-in-out infinite;
 	}
 
-	@keyframes rock {
-		0%, 100% { transform: rotate(-4deg) scale(1); }
-		50%       { transform: rotate(5deg) scale(1.06); }
+	@keyframes spin-slot {
+		0%, 80%, 100% { transform: rotate(0deg) scale(1); }
+		40%           { transform: rotate(-8deg) scale(1.1); }
 	}
 
 	.title-text {
 		font-family: 'Bebas Neue', sans-serif;
-		font-size: clamp(2.8rem, 7.5vw, 5.5rem);
+		font-size: clamp(2.4rem, 7vw, 5rem);
 		letter-spacing: 0.04em;
 		color: #fff;
 	}
@@ -185,18 +202,19 @@
 		color: rgba(240, 240, 250, 0.38);
 	}
 
+	.disclaimer {
+		margin-top: 0.5rem;
+		font-size: 0.72rem;
+		color: rgba(248, 113, 113, 0.45);
+		font-style: italic;
+	}
+
 	/* ── CARDS GRID ── */
 	.cards-grid {
 		display: grid;
 		grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
 		gap: 1.4rem;
 		animation: fade-down 0.65s ease 0.1s both;
-	}
-
-	.cards-grid--single {
-		grid-template-columns: 1fr;
-		max-width: 320px;
-		margin: 0 auto;
 	}
 
 	/* ── GAME CARD ── */
@@ -217,14 +235,48 @@
 	}
 
 	.game-card:hover {
-		background: rgba(255, 215, 0, 0.08);
-		border-color: rgba(255, 215, 0, 0.35);
+		background: rgba(220, 38, 38, 0.08);
+		border-color: rgba(220, 38, 38, 0.35);
 		transform: translateY(-5px) scale(1.02);
-		box-shadow: 0 12px 40px rgba(255, 215, 0, 0.15);
+		box-shadow: 0 12px 40px rgba(220, 38, 38, 0.15);
 	}
 
+	.card-slots:hover {
+		background: rgba(251, 191, 36, 0.08);
+		border-color: rgba(251, 191, 36, 0.35);
+		box-shadow: 0 12px 40px rgba(251, 191, 36, 0.15);
+	}
+	.card-slots:hover .card-cta { color: rgba(251, 191, 36, 0.9); }
 
-.card-emoji {
+	.card-corsa:hover {
+		background: rgba(34, 197, 94, 0.08);
+		border-color: rgba(34, 197, 94, 0.35);
+		box-shadow: 0 12px 40px rgba(34, 197, 94, 0.15);
+	}
+	.card-corsa:hover .card-cta { color: rgba(34, 197, 94, 0.8); }
+
+	.card-cenzino:hover {
+		background: rgba(245, 158, 11, 0.1);
+		border-color: rgba(245, 158, 11, 0.4);
+		box-shadow: 0 12px 40px rgba(245, 158, 11, 0.18);
+	}
+	.card-cenzino:hover .card-cta { color: rgba(245, 158, 11, 0.8); }
+
+	.card-bingo:hover {
+		background: rgba(109, 40, 217, 0.1);
+		border-color: rgba(109, 40, 217, 0.4);
+		box-shadow: 0 12px 40px rgba(109, 40, 217, 0.18);
+	}
+	.card-bingo:hover .card-cta { color: rgba(167, 139, 250, 0.9); }
+
+	.card-bluff:hover {
+		background: rgba(124, 58, 237, 0.1);
+		border-color: rgba(124, 58, 237, 0.4);
+		box-shadow: 0 12px 40px rgba(124, 58, 237, 0.18);
+	}
+	.card-bluff:hover .card-cta { color: rgba(167, 139, 250, 0.9); }
+
+	.card-emoji {
 		font-size: 3.5rem;
 		line-height: 1;
 		transition: transform 0.22s ease;
@@ -254,7 +306,7 @@
 		font-size: 0.75rem;
 		font-weight: 700;
 		letter-spacing: 0.08em;
-		color: rgba(255, 215, 0, 0.6);
+		color: rgba(248, 113, 113, 0.6);
 		opacity: 0;
 		transform: translateY(4px);
 		transition: opacity 0.2s ease, transform 0.2s ease;
@@ -265,28 +317,12 @@
 		transform: translateY(0);
 	}
 
-	/* ── COMPAT SECTION ── */
-	.compat-section {
-		margin-top: 2rem;
-		animation: fade-down 0.65s ease 0.2s both;
-	}
-
 	/* ── FOOTER ── */
 	footer {
 		text-align: center;
 		color: rgba(240, 240, 250, 0.2);
 		font-size: 0.75rem;
 		padding-top: 3rem;
-	}
-
-	footer a {
-		color: rgba(248, 113, 113, 0.6);
-		text-decoration: none;
-		font-weight: 700;
-	}
-
-	footer a:hover {
-		color: #f87171;
 	}
 
 	/* ── RESPONSIVE ── */

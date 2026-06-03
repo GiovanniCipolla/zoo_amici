@@ -27,6 +27,19 @@ function shuffle(arr, seed) {
 	return a
 }
 
+// ── NOMI ROUND ──────────────────────────────────────────────────────────
+const NOMI_ROUND = {
+	1: '16esimi di Finale',
+	2: 'Ottavi di Finale',
+	3: 'Quarti di Finale',
+	4: 'Semifinali',
+	5: 'Finale'
+}
+
+export function getNomeRound(round) {
+	return NOMI_ROUND[round] || `Round ${round}`
+}
+
 // ── TORNEO ──────────────────────────────────────────────────────────────
 export async function getTorneoAttivo() {
 	const { data } = await supabase
@@ -80,13 +93,97 @@ export async function creaTorneo() {
 	return torneo
 }
 
+// ── AVANZAMENTO ROUND ───────────────────────────────────────────────────
+export async function checkEAvanzaRound(torneoId) {
+	const { data: tuttePartite } = await supabase
+		.from('partite')
+		.select('*')
+		.eq('torneo_id', torneoId)
+		.order('round', { ascending: true })
+		.order('posizione', { ascending: true })
+
+	if (!tuttePartite || tuttePartite.length === 0) return false
+
+	const roundMax = Math.max(...tuttePartite.map((p) => p.round))
+	const partiteRound = tuttePartite.filter((p) => p.round === roundMax)
+
+	// Tutte le partite del round corrente devono essere scadute
+	const now = Date.now()
+	const tutteComplete = partiteRound.every((p) => now >= new Date(p.data_fine).getTime())
+	if (!tutteComplete) return false
+
+	// Il round successivo esiste già?
+	if (tuttePartite.some((p) => p.round === roundMax + 1)) return false
+
+	// Se c'è solo 1 partita nel round corrente → è la Finale, torneo finito
+	if (partiteRound.length === 1) return false
+
+	// Calcola i vincitori (in caso di pareggio/0 voti: avanza membro1)
+	const partiteIds = partiteRound.map((p) => p.id)
+	const { data: tuttiVoti } = await supabase
+		.from('voti')
+		.select('partita_id, votato')
+		.in('partita_id', partiteIds)
+
+	const votiMap = {}
+	for (const v of tuttiVoti || []) {
+		if (!votiMap[v.partita_id]) votiMap[v.partita_id] = []
+		votiMap[v.partita_id].push(v.votato)
+	}
+
+	const vincitori = partiteRound.map((partita) => {
+		const votiPartita = votiMap[partita.id] || []
+		const v1 = votiPartita.filter((v) => v === partita.membro1).length
+		const v2 = votiPartita.filter((v) => v === partita.membro2).length
+		return v1 >= v2 ? partita.membro1 : partita.membro2
+	})
+
+	// Programma il nuovo round a partire da domani mezzanotte
+	const nowDate = new Date()
+	const mezzanotte = new Date(
+		nowDate.getFullYear(),
+		nowDate.getMonth(),
+		nowDate.getDate() + 1,
+		0,
+		0,
+		0
+	)
+
+	const nuovoRound = roundMax + 1
+	const nNuove = vincitori.length / 2
+	const partiteData = []
+
+	for (let i = 0; i < nNuove; i++) {
+		const dataInizio = new Date(mezzanotte.getTime() + i * 24 * 60 * 60 * 1000)
+		const dataFine = new Date(dataInizio.getTime() + 24 * 60 * 60 * 1000)
+		partiteData.push({
+			torneo_id: torneoId,
+			round: nuovoRound,
+			posizione: i + 1,
+			membro1: vincitori[i * 2],
+			membro2: vincitori[i * 2 + 1],
+			data_inizio: dataInizio.toISOString(),
+			data_fine: dataFine.toISOString(),
+			stato: i === 0 ? 'attivo' : 'in_attesa'
+		})
+	}
+
+	const { error } = await supabase.from('partite').insert(partiteData)
+	if (error) throw error
+
+	await supabase.from('torneo').update({ round_corrente: nuovoRound }).eq('id', torneoId)
+
+	return true
+}
+
 // ── PARTITE ─────────────────────────────────────────────────────────────
 export async function getPartite(torneoId) {
 	const { data } = await supabase
 		.from('partite')
 		.select('*')
 		.eq('torneo_id', torneoId)
-		.order('posizione')
+		.order('round', { ascending: true })
+		.order('posizione', { ascending: true })
 	return data || []
 }
 
@@ -97,6 +194,16 @@ export async function getVoti(partitaId) {
 		.select('votato, nominativo, created_at')
 		.eq('partita_id', partitaId)
 		.order('created_at')
+	return data || []
+}
+
+// Carica voti di più partite in una sola query (per la cache vincitori)
+export async function getVotiMultiple(partitaIds) {
+	if (!partitaIds || partitaIds.length === 0) return []
+	const { data } = await supabase
+		.from('voti')
+		.select('partita_id, votato')
+		.in('partita_id', partitaIds)
 	return data || []
 }
 
