@@ -193,6 +193,7 @@
 
 	function eliminaPlayer() {
 		if (playerElim) return;
+		if (popup !== null) return; // durante l'annuncio di eliminazione, non eliminare
 		playerElim = true;
 		const p = concorrenti.find(c => c.isPlayer);
 		if (p) {
@@ -655,12 +656,12 @@
 				</div>
 			{/if}
 
-			<!-- Controlli -->
+			<!-- Controlli — due zone ampie toccabili -->
 			<div class="controls" class:fermi-ctrl={faseGioco === 'fermi'}>
-				<!-- Piede sinistro -->
+				<!-- Zona sinistra -->
 				<button
 					type="button"
-					class="foot-btn"
+					class="zone-btn zone-sx"
 					class:pressed={pieSx}
 					class:fermi-btn={faseGioco === 'fermi'}
 					ontouchstart={touchSxDown}
@@ -671,30 +672,29 @@
 					onmouseleave={mouseSxLeave}
 					oncontextmenu={(e) => e.preventDefault()}
 				>
-					<span class="foot-icon">🦶</span>
-					<span class="foot-label">SIN</span>
-
+					<span class="zone-icon">🦶</span>
+					<span class="zone-lbl">SIN</span>
 				</button>
 
-				<!-- Centro info -->
-				<div class="ctrl-mid">
+				<!-- Separatore centrale con stato -->
+				<div class="zone-sep" aria-hidden="true">
 					{#if faseGioco === 'fermi'}
 						{#if pieSx && pieDx}
-							<span class="mid-ok">✅</span>
+							<span class="sep-ok">✅</span>
 						{:else}
-							<span class="mid-warn">❗</span>
+							<span class="sep-warn">❗</span>
 						{/if}
 					{:else if faseGioco === 'countdown'}
-						<span class="mid-cd">{cdNum}</span>
+						<span class="sep-cd">{cdNum}</span>
 					{:else}
-						<span class="mid-hint">↔</span>
+						<span class="sep-hint">↔</span>
 					{/if}
 				</div>
 
-				<!-- Piede destro -->
+				<!-- Zona destra -->
 				<button
 					type="button"
-					class="foot-btn"
+					class="zone-btn zone-dx"
 					class:pressed={pieDx}
 					class:fermi-btn={faseGioco === 'fermi'}
 					ontouchstart={touchDxDown}
@@ -705,9 +705,8 @@
 					onmouseleave={mouseDxLeave}
 					oncontextmenu={(e) => e.preventDefault()}
 				>
-					<span class="foot-icon">🦶</span>
-					<span class="foot-label">DES</span>
-
+					<span class="zone-icon">🦶</span>
+					<span class="zone-lbl">DES</span>
 				</button>
 			</div>
 		</div>
@@ -1151,58 +1150,64 @@
 		50%      { opacity: 0.6; }
 	}
 
-	/* Controls */
+	/* Controls — due zone ampie */
 	.controls {
 		flex-shrink: 0;
-		display: flex; align-items: center; gap: 0.5rem;
-		padding: 0.5rem 0.8rem;
+		display: flex;
+		height: 38vh;
+		min-height: 160px;
+		max-height: 300px;
 		background: rgba(0,0,0,0.5);
 		border-top: 1px solid rgba(255,255,255,0.06);
 	}
 
-	.foot-btn {
+	.zone-btn {
 		flex: 1;
-		display: flex; flex-direction: column; align-items: center; gap: 0.15rem;
-		padding: 0.7rem 0.5rem;
-		background: rgba(255,255,255,0.07);
-		border: 2px solid rgba(255,255,255,0.12);
-		border-radius: 14px; cursor: pointer;
-		color: #f0f0fa; font-family: 'Outfit', sans-serif;
-		transition: all 0.08s;
+		display: flex; flex-direction: column; align-items: center; justify-content: center;
+		gap: 0.6rem;
+		/* sposta il contenuto verso l'alto, lontano dagli angoli (wallet sx, achievement dx) */
+		padding-bottom: 3.5rem;
+		background: rgba(255,255,255,0.04);
+		border: none; cursor: pointer;
+		color: rgba(240,240,250,0.45);
+		font-family: 'Outfit', sans-serif;
+		transition: background 0.08s, color 0.08s;
 		user-select: none; touch-action: none;
 		-webkit-tap-highlight-color: transparent;
 	}
-	.foot-btn:active, .foot-btn.pressed {
+	.zone-btn:active, .zone-btn.pressed {
 		background: rgba(200,120,48,0.3);
-		border-color: #c87830;
-		transform: scale(0.96);
-		box-shadow: 0 0 16px rgba(200,120,48,0.4);
+		color: #fff;
+		box-shadow: inset 0 0 40px rgba(200,120,48,0.2);
 	}
-	.foot-btn.fermi-btn {
-		border-color: rgba(239,68,68,0.4);
+	.zone-btn.fermi-btn { background: rgba(239,68,68,0.05); }
+	.zone-btn.fermi-btn.pressed {
+		background: rgba(34,197,94,0.2);
+		color: #4ade80;
+		box-shadow: inset 0 0 40px rgba(34,197,94,0.15);
 	}
-	.foot-btn.fermi-btn.pressed {
-		background: rgba(34,197,94,0.25);
-		border-color: #4ade80;
-		box-shadow: 0 0 16px rgba(34,197,94,0.4);
-	}
-	.foot-icon  { font-size: 1.6rem; line-height: 1; }
-	.foot-label { font-family: 'Bebas Neue', sans-serif; font-size: 1rem; letter-spacing: 0.05em; }
+	.zone-icon { font-size: 2.4rem; line-height: 1; }
+	.zone-lbl  { font-family: 'Bebas Neue', sans-serif; font-size: 1.4rem; letter-spacing: 0.1em; }
 
-	/* Ctrl mid */
-	.ctrl-mid {
+	/* Separatore centrale */
+	.zone-sep {
 		width: 52px; flex-shrink: 0;
 		display: flex; align-items: center; justify-content: center;
+		padding-bottom: 3.5rem;
+		background: rgba(0,0,0,0.25);
+		border-left: 1px solid rgba(255,255,255,0.05);
+		border-right: 1px solid rgba(255,255,255,0.05);
+		pointer-events: none;
 	}
-	.mid-ok   { font-size: 1.8rem; }
-	.mid-warn { font-size: 1.8rem; animation: shake 0.3s ease-in-out infinite; }
+	.sep-ok   { font-size: 1.8rem; }
+	.sep-warn { font-size: 1.8rem; animation: shake 0.3s ease-in-out infinite; }
 	@keyframes shake {
 		0%,100% { transform: translateX(0); }
 		25%      { transform: translateX(-3px); }
 		75%      { transform: translateX(3px); }
 	}
-	.mid-cd   { font-family: 'Bebas Neue', sans-serif; font-size: 1.8rem; color: #fbbf24; }
-	.mid-hint { font-size: 1.4rem; color: rgba(240,240,250,0.3); }
+	.sep-cd   { font-family: 'Bebas Neue', sans-serif; font-size: 2rem; color: #fbbf24; }
+	.sep-hint { font-size: 1.4rem; color: rgba(240,240,250,0.2); }
 
 	/* ══════════════════ POPUP ══════════════════ */
 	.popup-overlay {
@@ -1355,8 +1360,9 @@
 		.char-nm { font-size: 0.45rem; }
 		.martina-col { width: 44px; }
 		.guardiana { font-size: 1.8rem; }
-		.foot-icon { font-size: 1.3rem; }
-		.ctrl-mid { width: 40px; }
+		.zone-icon { font-size: 2rem; }
+		.zone-lbl  { font-size: 1.2rem; }
+		.zone-sep  { width: 40px; }
 		.cd-numero { font-size: clamp(6rem, 28vw, 10rem); }
 	}
 </style>
