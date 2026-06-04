@@ -12,56 +12,59 @@
 	const PREMIO      = 3;     // W per vittoria
 
 	const FRASI_MARTINA = [
-		'Fermoooo! {nome}, HAI MOSSO! Fuori immediatamente, che vergogna!',
-		'{nome}! Li ho visti quei piedini muoversi! Eliminato subito!',
-		'Ahahah {nome}! Pensavi che non guardassi? SBAGLIATO di grosso.',
-		'Ma {nome}... stai tremando? Fuori! SUBITO! Non si fa così!',
-		'{nome}, con quella faccia credevi di passarla liscia? GIAMMAI!',
-		'HO VISTO TUTTO {nome}! TUTTO! Anche quando hai respirato storto!',
-		'{nome}! Anche le statue sono più ferme di te! Esci dal campo!',
-		'No no no no, {nome}! Questo non è assolutamente accettabile!',
-		'{nome}, ti avevo avvertito. Io vedo sempre. SEMPRE. Ciao ciao!',
-		'Ridicolo {nome}! Hai mosso pure le orecchie! Fuori!',
-		'{nome}... stavi ballando?! Ti sembra il momento?! ELIMINATO!',
-		'Oh {nome}! Pensavi che fossi distratta? MAI nella vita. FUORI.',
-		'{nome} ma che roba! Nemmeno il vento si muove così tanto! Via!',
-		'BECCATO {nome}! Non puoi nasconderti da questi occhi! Fuori!',
-		'{nome}, mi dispiace... no aspetta, non mi dispiace per niente!',
-		'Ehi {nome}! Dove pensi di andare?! FERMO HO DETTO FERMO!',
-		'{nome}... ho contato tre movimenti. TRE. Come ti permetti?!',
-		'Povero {nome}! Così non si fa. Torna a casa e allenati meglio!',
-		'{nome}!! Grido perché SONO DELUSA. Eliminato immediatamente!',
-		'Ma {nome}, sul serio? SUL SERIO?! Neanche ci provi! Via!',
-		'{nome}, il mio gatto fa meglio di te e dorme 20 ore al giorno!',
-		'FERMOOO dicevo! {nome} ha capito \'corri il più veloce possibile\'!',
-		'{nome}... lo sapevo dall\'inizio. Non avevo dubbi. Eliminato.',
-		'AH! Ti ho beccato {nome}! Che soddisfazione! Fuori dal campo!',
-		'{nome}, questo comportamento non lo tollero. Esci e rifletti!',
-		'Hai mosso il naso {nome}! IL NASO! Come si fa?! ELIMINATO!',
-		'{nome}!! Più rumoroso di un elefante in cristalleria! Via!',
-		'No {nome}, no. No no no. Non va bene per niente. Esci ora.',
-		'{nome}... con che coraggio ti muovi sotto i miei occhi?! FUORI!',
-		'Avevi una possibilità {nome}. UNA. E l\'hai sprecata miseramente.',
-		'{nome}, non c\'è abbastanza delusione per descrivere questo. Esci!',
-		'Ti ho visto da lontanissimo {nome}! Avevo quasi speranza in te.',
-		'{nome}! Stavi tremando! Non è stare fermi, è un disastro! Via!',
-		'Ehm... {nome}? EHMMM?! Ti sembra normale?! ELIMINATO!',
-		'{nome}, ogni volta che mi giro ci sei tu a fare il solito errore.',
-		'Guarda un po\' {nome}! Credeva di essere invisibile! ELIMINATO!',
-		'{nome}... mi fai quasi tenerezza. QUASI. Ma fuori lo stesso!',
-		'Oh no {nome}, oh no no. Non hai capito proprio niente! Via!',
-		'{nome}! Con quei movimenti pensavi di ingannarmi?! IMPOSSIBILE!',
-		'Rido {nome}, rido! Come si fa ad essere così prevedibili?!',
-		'{nome}, hai mosso un sopracciglio. Un SOPRACCIGLIO. Inaccettabile.',
-		'Adesso basta {nome}! Finisce qui! Stai a casa la prossima volta!',
-		'{nome}... mi chiedo come fai anche ad alzarti la mattina. Eliminato!',
-		'FERMOOOO! {nome}! Non \'un pochino fermi\', FERMI FERMI! Esci!',
-		'{nome}, sul podio delle delusioni sei stabilmente in cima. Fuori!',
-		'Non ho parole {nome}. Davvero. Zero parole. Solo: FUORI.',
-		'{nome}!! Sembrava che stessi facendo ginnastica lì in mezzo!',
-		'Lo vedi {nome}? Lo vedi cosa succede quando non stai fermo? ELIMINATO.',
-		'{nome}, hai fallito in modo così spettacolare che quasi mi congratulo.',
-		'E così finisce il cammino di {nome}! Che sconfitta memorabile! Arrivederci!'
+		'🚨 {nome}!! HO VISTO TUTTO! Anche quel capello che si è mosso. ELIMINATO!',
+		'🐆 {nome}, tesoro mio... stavi TREMANDO. Ho detto TREMANDO. Esci subito!',
+		'AH AH AH! {nome} si credeva una statua! Con quei piedini ballerini! Via!',
+		'{nome}! Mi hai fatta arrabbiare. Sai cosa succede quando mi arrabbio? OUT!',
+		'No no no no no NO! {nome}! Stavo quasi per non guardare... e poi... ECCOTI!',
+		'{nome}, il mio cactus sul davanzale si muove meno di te. E non ha le gambe!',
+		'BECCATOOOO {nome}! Pensavi fossi distratta dalla mia newsletter?! GIAMMAI!',
+		'{nome}... ho visto. La telecamera ha visto. Il puma interiore ha visto. Fuori!',
+		'Che spettacolo {nome}! Sembrava danza contemporanea! ELIMINATO, artista!',
+		'Oh {nome}, {nome}, {nome}... tsk tsk tsk. Non si fa proprio. Per niente.',
+		'{nome}!! Stavi respirando FORTE! In questa gara si trattiene! Esci subito!',
+		'Ma {nome}... mi guardavi negli occhi mentre ti muovevi?! CHE AFFRONTO!',
+		'{nome}, sinceramente mi stai deludendo. Pensavo fossi meglio. Mi sbagliavo.',
+		'HEI {nome}! Credevi che la regola "fermo" valesse solo per gli altri?! NO!',
+		'{nome}! Ho ricontato: tre passi. TRE. Ogni passo un insulto alla mia pazienza!',
+		'Sai cosa mi fa ridere {nome}? Che pensavi davvero di farla franca. Adorabile!',
+		'{nome}... stavo per andare a prendere un caffè e mi hai rovinato la pausa!',
+		'ELIMINATO {nome}! E per favore, quando esci, non sbattere nemmeno la porta!',
+		'{nome}! Il pavimento ha sentito i tuoi passi. IO ho sentito i tuoi passi. VIA!',
+		'Ma {nome}... stavi ballando la tarantella?! Magnifico come genere, ma NON ORA!',
+		'{nome}, potresti almeno fare finta di provarci la prossima volta? ELIMINATO.',
+		'Oh mamma mia {nome}! Un bradipo in letargo è più dinamico di quanto sei tu!',
+		'FERMOOOO avevo detto! {nome} ha capito "vai il più veloce possibile"! FUORI!',
+		'{nome}! Mandavi segnali morse coi piedi?! ELIMINATO per codice sospetto!',
+		'Patetico {nome}. No aspetta... ESILARANTE. Poi patetico. Eliminato comunque!',
+		'{nome}!! Il mio senso di colpa dura 0.3 secondi. Poi passa. FUORI!',
+		'Guarda un po\' {nome}! Si muoveva sperando che non guardassi... ERRORE ETERNO!',
+		'{nome}, lo sai che ho i riflessi di un puma vero? Vedi il problema ora?!',
+		'INCREDIBILE {nome}! Eppure le regole erano semplici... FERMI. F-E-R-M-I. Fuori!',
+		'{nome}! Hai mosso il gomito. IL GOMITO! Come osi?! Come ci riesci?! VIA!',
+		'Sei coraggioso {nome}, glielo riconosco. Coraggioso e molto, molto eliminato.',
+		'{nome}... la faccia che fai è adorabile. Peccato che sei fuori lo stesso!',
+		'AH! {nome} si era convinto di essere invisibile! Sorpresaaaaa, non lo sei! VIA!',
+		'Mi dispiace {nome}. No aspetta — non mi dispiace per niente! ELIMINATO!',
+		'{nome}!! Ogni volta che mi giro, tu stai facendo qualcosa. Hai un problema serio.',
+		'Sapevo dall\'inizio che {nome} avrebbe fatto così. LO SAPEVO. Zero sorpresa.',
+		'{nome}! Pensavi bastassero le orecchie da puma? Ho anche gli occhi! FUORI!',
+		'Che delusione immensa {nome}... ma in fondo, perché mi sorprendo? ELIMINATO.',
+		'{nome}, hai fallito così spettacolarmente che quasi mi congratulo. Quasi. Esci.',
+		'E così {nome} cade! Con una mossa così clamorosa che ci scriverei un libro!',
+		'{nome}! La prossima volta, prima di partecipare, impara cosa vuol dire FERMI!',
+		'Oh no {nome}, no no no. Non funziona così. Non è MAI funzionato così. VIA!',
+		'{nome}!! Fremevi come un telefono in vibrazione! L\'ho sentito da qui!',
+		'Tsk. {nome}. Tsk tsk tsk. Che tristezza infinita. Esci dal campo, please.',
+		'{nome}, lo sai cosa mi fa più arrabbiare? Che si vede che non ci hai provato!',
+		'CACCIATO {nome}! E porta via anche quella faccia da "non ero io"! L\'ho visto!',
+		'{nome}! Hai la concentrazione di un cucciolo di labrador. Carino, ma FUORI!',
+		'No {nome}... no. Siediti. Riposati. Pensa alle tue scelte. Poi esci dal campo.',
+		'{nome}!! Ogni singola volta. Ogni. Singola. Volta. Come fai ad essere così prevedibile?!',
+		'E chiudiamo qui il cammino di {nome}! Applausi per l\'epica uscita di scena!',
+		'{nome}... avevo quasi speranza in te. QUASI. Ma poi ti ho visto. Fine speranza.',
+		'Ridicolo {nome}! Hai mosso pure le orecchie! LE ORECCHIE! Come si fa?! Fuori!',
+		'{nome}, il mio gatto dorme 20 ore al giorno e sta più fermo di te. Scandaloso!'
 	];
 
 	function fraseMartina(nome) {
@@ -83,6 +86,7 @@
 	let playerElim     = $state(false);
 
 	let popup          = $state(null);   // { nome, emoji, frase }
+	let popupCountdown = $state(5);      // countdown auto-chiusura popup
 	let saldo          = $state(0);
 	let classifica     = $state([]);
 	let playerVinto    = $state(false);
@@ -105,6 +109,7 @@
 	let fermiT   = null;
 	let fermiETs = [];
 	let popupT   = null;
+	let popupCdInt = null; // intervallo countdown auto-chiusura popup
 	let terminaT  = null;
 	let trapFlashT = null;
 
@@ -134,6 +139,7 @@
 		clearTimeout(cicloT);       cicloT     = null;
 		clearTimeout(fermiT);       fermiT     = null;
 		clearTimeout(popupT);       popupT     = null;
+		clearInterval(popupCdInt);  popupCdInt = null;
 		clearTimeout(terminaT);     terminaT   = null;
 		clearTimeout(trapFlashT);   trapFlashT = null;
 		cdTs.forEach(clearTimeout);     cdTs     = [];
@@ -193,7 +199,7 @@
 			concorrenti = concorrenti.map(c => c.isPlayer ? { ...c, eliminato: true } : c);
 			mostraPopup(p.nome, p.emoji, fraseMartina(p.nome), true);
 		}
-		// termina() viene chiamato quando l'utente chiude il popup
+		// termina() viene chiamato automaticamente allo scadere del countdown popup
 	}
 
 	// ── AI tick ───────────────────────────────────────────────────────
@@ -318,11 +324,12 @@
 		}, durF);
 	}
 
-	// ── Popup — pausa il gioco finché l'utente non chiude ────────────
+	// ── Popup — si auto-chiude dopo 5 secondi ────────────────────────
 	function mostraPopup(nome, emoji, frase, isPlayer = false) {
 		if (popup !== null) return; // già uno popup aperto, ignora
 		clearTimeout(popupT);
 		popup = { nome, emoji, frase, isPlayer };
+		popupCountdown = 5;
 		// Ferma TUTTO: AI, ciclo, countdown, fermi, eliminazioni
 		clearInterval(aiInt);       aiInt    = null;
 		clearTimeout(cicloT);       cicloT   = null;
@@ -330,9 +337,21 @@
 		clearTimeout(fermiT);       fermiT   = null;
 		fermiETs.forEach(clearTimeout); fermiETs = [];
 		clearTimeout(trapFlashT);   trapFlash = false;
+		// Countdown automatico: 5 → 4 → 3 → 2 → 1 → chiudi
+		clearInterval(popupCdInt);
+		popupCdInt = setInterval(() => {
+			popupCountdown--;
+			if (popupCountdown <= 0) {
+				clearInterval(popupCdInt);
+				popupCdInt = null;
+				chiudiPopup();
+			}
+		}, 1000);
 	}
 
 	function chiudiPopup() {
+		clearInterval(popupCdInt);
+		popupCdInt = null;
 		popup = null;
 		if (fase !== 'gioco' || terminato) return;
 		if (playerElim) {
@@ -445,7 +464,7 @@
 </script>
 
 <!-- ══════════════════════════════════════════════════════════════════ -->
-<!-- POPUP — sempre sopra tutto                                        -->
+<!-- POPUP — sempre sopra tutto, si chiude da solo dopo 5s            -->
 <!-- ══════════════════════════════════════════════════════════════════ -->
 {#if popup}
 	<div class="popup-overlay" role="dialog" aria-modal="true">
@@ -453,9 +472,7 @@
 			<div class="popup-martina">🐆</div>
 			<div class="popup-target">{popup.emoji}</div>
 			<p class="popup-frase">"{popup.frase}"</p>
-			<button class="popup-btn" class:btn-player={popup.isPlayer} onclick={chiudiPopup}>
-				{popup.isPlayer ? 'ok va bene... 😔' : '▶ Riprendi'}
-			</button>
+			<div class="popup-countdown" aria-live="assertive">{popupCountdown}</div>
 		</div>
 	</div>
 {/if}
@@ -483,7 +500,7 @@
 					Non farti vedere<br>da Martina!
 				</h1>
 				<p class="menu-desc">
-					Non farti vedere muovere da Martina altrimenti ti attaccherà e ti sgriderà!
+					Martina ha occhi laser, riflessi da puma e zero pazienza. Corri quando non guarda, congelati quando si gira — o preparati a ricevere una sgridata di altissimo livello.
 				</p>
 			</header>
 
@@ -497,32 +514,32 @@
 						<div class="rule-item">
 							<span class="rule-icon">🟢</span>
 							<div>
-								<strong>VIA!</strong> — Premi i tasti SIN e DES in fondo allo schermo, alternandoli: sin, des, sin, des…
+								<strong>VIA!</strong> — Martina guarda dall'altra parte: corri! Premi SIN e DES alternati più veloce che puoi.
 							</div>
 						</div>
 						<div class="rule-item">
 							<span class="rule-icon">🟡</span>
 							<div>
-								<strong>3... 2... 1...</strong> — Martina sta per girarsi! Preparati a fermarti.
+								<strong>3... 2... 1...</strong> — Sta per girarsi! Smettila di correre e preparati a congelare tutto.
 							</div>
 						</div>
 						<div class="rule-item">
 							<span class="rule-icon">🔴</span>
 							<div>
-								<strong>FERMI!</strong> — Tieni premuti ENTRAMBI i tasti contemporaneamente.<br>
-								Rilasci uno? Sei eliminato. È come trattenere il respiro.
+								<strong>FERMI!</strong> — Tieni premuti ENTRAMBI i tasti, come se trattenessi il respiro.<br>
+								Molli uno? Eliminato sul posto. Nessuna pietà.
+							</div>
+						</div>
+						<div class="rule-item">
+							<span class="rule-icon">⚡</span>
+							<div>
+								<strong>Bastardatata!</strong> — A volte si gira senza contare fino a 1. Flash rosso = pericolo immediato.
 							</div>
 						</div>
 						<div class="rule-item">
 							<span class="rule-icon">🏆</span>
 							<div>
-								Raggiungi il traguardo prima degli altri. <strong>Vinci +{PREMIO}W!</strong>
-							</div>
-						</div>
-						<div class="rule-item">
-							<span class="rule-icon">💀</span>
-							<div>
-								Se vieni eliminato, Martina ti dedica un discorso personalizzato.
+								Raggiungi il traguardo per primo. <strong>Vinci +{PREMIO}W!</strong> Martina sarà furibonda.
 							</div>
 						</div>
 					</div>
@@ -656,7 +673,7 @@
 				>
 					<span class="foot-icon">🦶</span>
 					<span class="foot-label">SIN</span>
-					
+
 				</button>
 
 				<!-- Centro info -->
@@ -690,7 +707,7 @@
 				>
 					<span class="foot-icon">🦶</span>
 					<span class="foot-label">DES</span>
-					
+
 				</button>
 			</div>
 		</div>
@@ -1223,27 +1240,15 @@
 	}
 	.popup-frase {
 		font-size: 0.88rem; color: rgba(240,240,250,0.85);
-		line-height: 1.6; margin: 0.8rem 0 1.2rem;
+		line-height: 1.6; margin: 0.8rem 0 1rem;
 		font-style: italic;
 	}
-	.popup-btn {
-		padding: 0.55rem 1.5rem;
-		background: rgba(239,68,68,0.15);
-		border: 1px solid rgba(239,68,68,0.3);
-		border-radius: 999px; color: #f87171;
-		font-family: 'Outfit', sans-serif; font-size: 0.8rem;
-		cursor: pointer; transition: all 0.2s;
-	}
-	.popup-btn:hover {
-		background: rgba(239,68,68,0.25);
-	}
-	.popup-btn:not(.btn-player) {
-		background: rgba(34,197,94,0.12);
-		border-color: rgba(34,197,94,0.3);
-		color: #4ade80;
-	}
-	.popup-btn:not(.btn-player):hover {
-		background: rgba(34,197,94,0.22);
+	.popup-countdown {
+		font-family: 'Bebas Neue', sans-serif;
+		font-size: 3.5rem; line-height: 1;
+		color: rgba(240,240,250,0.25);
+		animation: pop 0.35s ease-out;
+		margin-top: 0.2rem;
 	}
 
 	/* ══════════════════ FINE ══════════════════ */
