@@ -7,6 +7,17 @@
 	// Giornale — visibile dal 29/05/2026 per 3 giorni
 	const GIORNALE_SCADE = new Date('2026-06-01T23:59:59').getTime();
 	const mostraGiornale = Date.now() < GIORNALE_SCADE;
+
+	// Banner poker — visibile solo 4 e 5 giugno 2026
+	const POKER_BANNER_SCADE = new Date('2026-06-06T00:00:00').getTime();
+	const mostraPokerBanner = Date.now() < POKER_BANNER_SCADE;
+	let pokerBannerDismissed = $state(
+		browser ? localStorage.getItem('zoo_poker_banner') === '1' : false
+	);
+	function dismissPokerBanner() {
+		pokerBannerDismissed = true;
+		if (browser) localStorage.setItem('zoo_poker_banner', '1');
+	}
 	let giornaleAperto = $state(
 		browser ? localStorage.getItem('zoo_giornale_aperto') !== '0' : true
 	);
@@ -96,6 +107,20 @@
 			{/if}
 		</div>
 	</header>
+
+	<!-- ── BANNER POKER ── -->
+	{#if mostraPokerBanner && !pokerBannerDismissed}
+	<div class="poker-banner">
+		<span class="poker-banner-new">NUOVO</span>
+		<span class="poker-banner-icon">🃏</span>
+		<div class="poker-banner-text">
+			<strong>Texas Hold'em è arrivato!</strong>
+			<span>4 tavoli · cash game + torneo da 10 · mani reali</span>
+		</div>
+		<a href="/poker" class="poker-banner-cta">Gioca →</a>
+		<button class="poker-banner-close" onclick={dismissPokerBanner} aria-label="Chiudi">✕</button>
+	</div>
+	{/if}
 
 	<!-- ── GIORNALE ── -->
 	{#if mostraGiornale}
@@ -216,6 +241,85 @@
 </main>
 
 <style>
+	/* ── BANNER POKER ── */
+	.poker-banner {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+		margin-bottom: 1.2rem;
+		padding: 0.7rem 1rem;
+		background: linear-gradient(135deg, rgba(22,101,52,0.22), rgba(5,46,22,0.35));
+		border: 1px solid rgba(34,197,94,0.35);
+		border-radius: 14px;
+		animation: fade-down 0.5s ease both;
+		flex-wrap: wrap;
+	}
+	.poker-banner-new {
+		font-size: 0.58rem;
+		font-weight: 800;
+		letter-spacing: 0.12em;
+		color: #86efac;
+		background: rgba(34,197,94,0.18);
+		border: 1px solid rgba(34,197,94,0.4);
+		border-radius: 6px;
+		padding: 0.15rem 0.45rem;
+		white-space: nowrap;
+		flex-shrink: 0;
+	}
+	.poker-banner-icon {
+		font-size: 1.5rem;
+		flex-shrink: 0;
+	}
+	.poker-banner-text {
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+		gap: 0.1rem;
+		min-width: 0;
+	}
+	.poker-banner-text strong {
+		font-size: 0.88rem;
+		color: #f0f0fa;
+	}
+	.poker-banner-text span {
+		font-size: 0.72rem;
+		color: rgba(240,240,250,0.45);
+	}
+	.poker-banner-cta {
+		padding: 0.38rem 0.9rem;
+		border-radius: 999px;
+		background: rgba(34,197,94,0.2);
+		border: 1px solid rgba(34,197,94,0.45);
+		color: #86efac;
+		font-size: 0.78rem;
+		font-weight: 700;
+		text-decoration: none;
+		white-space: nowrap;
+		transition: all 0.16s ease;
+		flex-shrink: 0;
+	}
+	.poker-banner-cta:hover {
+		background: rgba(34,197,94,0.32);
+		border-color: rgba(34,197,94,0.7);
+		color: #d1fae5;
+	}
+	.poker-banner-close {
+		background: transparent;
+		border: none;
+		color: rgba(240,240,250,0.28);
+		font-size: 0.78rem;
+		cursor: pointer;
+		padding: 0.2rem 0.3rem;
+		border-radius: 6px;
+		transition: all 0.14s ease;
+		flex-shrink: 0;
+		line-height: 1;
+	}
+	.poker-banner-close:hover {
+		color: rgba(240,240,250,0.7);
+		background: rgba(255,255,255,0.07);
+	}
+
 	/* ── BG BLOBS ── */
 	.bg-blobs {
 		position: fixed;

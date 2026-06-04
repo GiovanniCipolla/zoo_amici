@@ -51,6 +51,12 @@
 			<p class="card-desc">1–50W · Bluffa o sfida</p>
 			<span class="card-cta">Bluffa →</span>
 		</a>
+		<a href="/poker" class="game-card card-poker">
+			<span class="card-emoji">🃏</span>
+			<p class="card-title">Texas Hold'em</p>
+			<p class="card-desc">4 tavoli · 3 cash game + torneo da 10 · Mani reali</p>
+			<span class="card-cta">Siediti →</span>
+		</a>
 	</div>
 
 	<footer>
@@ -275,6 +281,13 @@
 		box-shadow: 0 12px 40px rgba(124, 58, 237, 0.18);
 	}
 	.card-bluff:hover .card-cta { color: rgba(167, 139, 250, 0.9); }
+
+	.card-poker:hover {
+		background: rgba(22, 101, 52, 0.1);
+		border-color: rgba(34, 197, 94, 0.4);
+		box-shadow: 0 12px 40px rgba(34, 197, 94, 0.18);
+	}
+	.card-poker:hover .card-cta { color: rgba(134, 239, 172, 0.9); }
 
 	.card-emoji {
 		font-size: 3.5rem;
