@@ -8,15 +8,13 @@
 	const GIORNALE_SCADE = new Date('2026-06-01T23:59:59').getTime();
 	const mostraGiornale = Date.now() < GIORNALE_SCADE;
 
-	// Banner poker — visibile solo 4 e 5 giugno 2026
-	const POKER_BANNER_SCADE = new Date('2026-06-06T00:00:00').getTime();
-	const mostraPokerBanner = Date.now() < POKER_BANNER_SCADE;
-	let pokerBannerDismissed = $state(
-		browser ? localStorage.getItem('zoo_poker_banner') === '1' : false
+	// Banner "Non farti vedere da Martina" — sempre visibile finché non dismissato
+	let martinaBannerDismissed = $state(
+		browser ? localStorage.getItem('zoo_martina_banner') === '1' : false
 	);
-	function dismissPokerBanner() {
-		pokerBannerDismissed = true;
-		if (browser) localStorage.setItem('zoo_poker_banner', '1');
+	function dismissMartinaBanner() {
+		martinaBannerDismissed = true;
+		if (browser) localStorage.setItem('zoo_martina_banner', '1');
 	}
 	let giornaleAperto = $state(
 		browser ? localStorage.getItem('zoo_giornale_aperto') !== '0' : true
@@ -109,16 +107,16 @@
 	</header>
 
 	<!-- ── BANNER POKER ── -->
-	{#if mostraPokerBanner && !pokerBannerDismissed}
+	{#if !martinaBannerDismissed}
 	<div class="poker-banner">
 		<span class="poker-banner-new">NUOVO</span>
-		<span class="poker-banner-icon">🃏</span>
+		<span class="poker-banner-icon">🐆</span>
 		<div class="poker-banner-text">
-			<strong>Texas Hold'em è arrivato!</strong>
-			<span>4 tavoli · cash game + torneo da 10 · mani reali</span>
+			<strong>Non farti vedere da Martina!</strong>
+			<span>Red light green light · 7 concorrenti · sopravvivi ai fermi</span>
 		</div>
-		<a href="/poker" class="poker-banner-cta">Gioca →</a>
-		<button class="poker-banner-close" onclick={dismissPokerBanner} aria-label="Chiudi">✕</button>
+		<a href="/martina" class="poker-banner-cta">Gioca →</a>
+		<button class="poker-banner-close" onclick={dismissMartinaBanner} aria-label="Chiudi">✕</button>
 	</div>
 	{/if}
 
@@ -248,8 +246,8 @@
 		gap: 0.75rem;
 		margin-bottom: 1.2rem;
 		padding: 0.7rem 1rem;
-		background: linear-gradient(135deg, rgba(22,101,52,0.22), rgba(5,46,22,0.35));
-		border: 1px solid rgba(34,197,94,0.35);
+		background: linear-gradient(135deg, rgba(120,60,10,0.22), rgba(80,30,5,0.35));
+		border: 1px solid rgba(200,120,48,0.4);
 		border-radius: 14px;
 		animation: fade-down 0.5s ease both;
 		flex-wrap: wrap;
@@ -258,9 +256,9 @@
 		font-size: 0.58rem;
 		font-weight: 800;
 		letter-spacing: 0.12em;
-		color: #86efac;
-		background: rgba(34,197,94,0.18);
-		border: 1px solid rgba(34,197,94,0.4);
+		color: #fcd9a0;
+		background: rgba(200,120,48,0.18);
+		border: 1px solid rgba(200,120,48,0.4);
 		border-radius: 6px;
 		padding: 0.15rem 0.45rem;
 		white-space: nowrap;
@@ -288,9 +286,9 @@
 	.poker-banner-cta {
 		padding: 0.38rem 0.9rem;
 		border-radius: 999px;
-		background: rgba(34,197,94,0.2);
-		border: 1px solid rgba(34,197,94,0.45);
-		color: #86efac;
+		background: rgba(200,120,48,0.2);
+		border: 1px solid rgba(200,120,48,0.45);
+		color: #fcd9a0;
 		font-size: 0.78rem;
 		font-weight: 700;
 		text-decoration: none;
@@ -299,9 +297,9 @@
 		flex-shrink: 0;
 	}
 	.poker-banner-cta:hover {
-		background: rgba(34,197,94,0.32);
-		border-color: rgba(34,197,94,0.7);
-		color: #d1fae5;
+		background: rgba(200,120,48,0.32);
+		border-color: rgba(200,120,48,0.7);
+		color: #fef3c7;
 	}
 	.poker-banner-close {
 		background: transparent;

@@ -723,6 +723,19 @@
 	}
 </script>
 
+<!-- ── POPUP "CI STIAMO LAVORANDO" ──────────────────────────────────── -->
+<div class="wip-overlay" role="dialog" aria-modal="true">
+	<div class="wip-box">
+		<div class="wip-em">🃏</div>
+		<h2 class="wip-titolo">Ci stiamo lavorando!</h2>
+		<p class="wip-desc">Il Texas Hold'em ha qualche problema da sistemare. Torna presto — nel frattempo prova i minigiochi!</p>
+		<div class="wip-actions">
+			<a href="/minigiochi" class="wip-btn-go">🐆 Non farti vedere da Martina</a>
+			<a href="/ludopatia" class="wip-btn-back">← Sala Ludopatia</a>
+		</div>
+	</div>
+</div>
+
 <!-- ── PARTICELLE ─────────────────────────────────────────────────────── -->
 {#each particelle as p (p.id)}
 	<div
@@ -1530,4 +1543,57 @@
 		.esci-card { padding: 1.8rem 1.4rem; }
 		h1 { flex-direction: column; gap: 0.3rem; }
 	}
+
+	/* ── WIP OVERLAY ── */
+	.wip-overlay {
+		position: fixed; inset: 0; z-index: 9999;
+		background: rgba(0, 0, 0, 0.88);
+		display: flex; align-items: center; justify-content: center;
+		padding: 1.5rem;
+		backdrop-filter: blur(6px);
+	}
+	.wip-box {
+		background: #12121e;
+		border: 2px solid rgba(245, 158, 11, 0.35);
+		border-radius: 22px;
+		padding: 2.5rem 2rem 2rem;
+		max-width: 400px; width: 100%;
+		text-align: center;
+		box-shadow: 0 24px 60px rgba(245, 158, 11, 0.15);
+		animation: wip-pop 0.4s cubic-bezier(0.34,1.56,0.64,1);
+	}
+	@keyframes wip-pop {
+		from { transform: scale(0.6) translateY(30px); opacity: 0; }
+		to   { transform: scale(1) translateY(0); opacity: 1; }
+	}
+	.wip-em { font-size: 4rem; line-height: 1; margin-bottom: 0.8rem; }
+	.wip-titolo {
+		font-family: 'Bebas Neue', sans-serif;
+		font-size: 2rem; letter-spacing: 0.05em;
+		color: #fbbf24; margin-bottom: 0.8rem;
+	}
+	.wip-desc {
+		font-size: 0.88rem; color: rgba(240,240,250,0.6);
+		line-height: 1.6; margin-bottom: 1.5rem;
+	}
+	.wip-actions {
+		display: flex; flex-direction: column; gap: 0.7rem;
+	}
+	.wip-btn-go {
+		padding: 0.85rem 1rem;
+		background: linear-gradient(135deg, #c87830, #a05820);
+		border-radius: 12px; color: #fff;
+		text-decoration: none; font-weight: 700; font-size: 0.9rem;
+		transition: all 0.2s;
+	}
+	.wip-btn-go:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(200,120,48,0.4); }
+	.wip-btn-back {
+		padding: 0.7rem 1rem;
+		background: rgba(255,255,255,0.05);
+		border: 1px solid rgba(255,255,255,0.1);
+		border-radius: 12px; color: rgba(240,240,250,0.5);
+		text-decoration: none; font-size: 0.82rem;
+		transition: all 0.18s;
+	}
+	.wip-btn-back:hover { background: rgba(255,255,255,0.1); color: #fff; }
 </style>

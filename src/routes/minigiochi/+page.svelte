@@ -23,12 +23,19 @@
 		<p class="subtitle">Giochi senza puntate · solo per il gusto di farlo</p>
 	</header>
 
-	<div class="cards-grid cards-grid--single">
+	<div class="cards-grid">
 		<a href="/flappy" class="game-card">
 			<span class="card-emoji">🦅</span>
 			<p class="card-title">Flappy Zoo</p>
 			<p class="card-desc">Scegli un animale · sopravvivi il più a lungo possibile</p>
 			<span class="card-cta">Vola →</span>
+		</a>
+		<a href="/martina" class="game-card game-card--martina">
+			<span class="card-emoji">🐆</span>
+			<p class="card-title">Non farti vedere!</p>
+			<p class="card-desc">Corri quando puoi · trattieni il respiro quando guarda · 7 concorrenti</p>
+			<span class="card-badge">NUOVO</span>
+			<span class="card-cta">Sfida →</span>
 		</a>
 	</div>
 
@@ -193,11 +200,6 @@
 		animation: fade-down 0.65s ease 0.1s both;
 	}
 
-	.cards-grid--single {
-		grid-template-columns: 1fr;
-		max-width: 320px;
-		margin: 0 auto;
-	}
 
 	/* ── GAME CARD ── */
 	.game-card {
@@ -263,6 +265,23 @@
 	.game-card:hover .card-cta {
 		opacity: 1;
 		transform: translateY(0);
+	}
+
+	.game-card--martina:hover {
+		background: rgba(200, 120, 48, 0.1);
+		border-color: rgba(200, 120, 48, 0.4);
+		box-shadow: 0 12px 40px rgba(200, 120, 48, 0.2);
+	}
+
+	.card-badge {
+		font-size: 0.6rem;
+		font-weight: 800;
+		letter-spacing: 0.12em;
+		background: linear-gradient(135deg, #c87830, #a05820);
+		color: #fff;
+		border-radius: 999px;
+		padding: 0.2em 0.7em;
+		text-transform: uppercase;
 	}
 
 	/* ── COMPAT SECTION ── */
